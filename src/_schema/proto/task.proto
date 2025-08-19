@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package task;
+
+option csharp_namespace = "Protobuf.Task";
+
+message TaskResponse {
+    int32 response_code = 1;
+    google.protobuf.StringValue error_code = 2;
+    google.protobuf.StringValue error_message = 3;
+}
+
