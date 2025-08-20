@@ -10,8 +10,32 @@ using TaskService.Application.Tasks.Validators;
 using TaskService.Domain.Interfaces;
 using TaskService.Infrastructure.Persistence;
 using TaskService.Infrastructure.Repositories;
+using MassTransit;
+using TaskProject.EmailService;
+using TaskService.API.Services;
+using TaskService.API.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add gRPC support
+builder.Services.AddGrpc();
+builder.Services.AddGrpcReflection();
+
+// Configure gRPC client to connect to EmailService
+builder.Services.AddGrpcClient<EmailNotification.EmailNotificationClient>(options =>
+{
+    options.Address = new Uri("https://localhost:5009"); // EmailService gRPC port
+}).ConfigureChannel(options =>
+{
+    options.UnsafeUseInsecureChannelCallCredentials = true;
+    options.HttpHandler = new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+    };
+});
+
+// Register EmailNotificationHandler
+builder.Services.AddScoped<EmailNotificationHandler>();
 
 // Database
 builder.Services.AddDbContext<TaskDbContext>(options =>
@@ -33,6 +57,31 @@ builder.Services.AddMediatR(cfg =>
 // FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskCommandValidator>();
 
+// MassTransit
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<EmailSentNotificationConsumer>();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+
+        cfg.ReceiveEndpoint("email-sent-notifications", e =>
+        {
+            // Set queue properties
+            e.Durable = true;
+            e.AutoDelete = false;
+
+            // Configure the consumer
+            e.ConfigureConsumer<EmailSentNotificationConsumer>(context);
+        });
+    });
+});
+
 // GraphQL
 builder.Services
     .AddGraphQLServer()
@@ -50,6 +99,25 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod();
+    });
+});
+
+// Allow HTTP/2 without TLS
+AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    // HTTP/1.1 and HTTP/2 for non-TLS endpoint
+    options.ListenAnyIP(5008, listenOptions =>
+    {
+        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
+    });
+
+    // HTTP/1.1 and HTTP/2 for TLS endpoint
+    options.ListenAnyIP(7131, listenOptions =>
+    {
+        listenOptions.UseHttps();
+        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
     });
 });
 

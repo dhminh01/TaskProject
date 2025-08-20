@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option csharp_namespace = "TaskProject.EmailService";
+
+package tasknotification;
+
+service EmailNotification {
+  rpc NotifyEmailSent (EmailSentRequest) returns (EmailSentResponse);
+}
+
+message EmailSentRequest {
+  string task_id = 1;
+  string email_status = 2;
+  string sent_timestamp = 3;
+}
+
+message EmailSentResponse {
+  bool success = 1;
+  string message = 2;
+}
