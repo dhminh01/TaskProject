@@ -1,14 +1,10 @@
 
 using MediatR;
+using TaskService.Application.Tasks.DTOs;
 
 namespace TaskService.Application.Tasks.Queries;
 
-public record GetTaskDetailQuery(Guid Id) : IRequest<GetTaskDetailResult>;
-
-public record GetTaskDetailResult(
-    Guid Id,
-    string Title,
-    string Description,
-    DateTime? DueDate,
-    DateTime DateCreated
-);
+public class GetTaskDetailQuery(Guid id) : IRequest<GetTaskDetailDto>
+{
+    public Guid Id { get; } = id;
+}

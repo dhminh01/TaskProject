@@ -1,5 +1,6 @@
 using MediatR;
 using TaskService.Application.Tasks.Commands;
+using TaskService.Application.Tasks.DTOs;
 
 namespace TaskService.Api.GraphQL.Mutations;
 
@@ -10,10 +11,12 @@ public class TaskMutations
         [Service] IMediator mediator,
         CancellationToken cancellationToken)
     {
-        var command = new CreateTaskCommand(
-            input.Title,
-            input.Description,
-            input.DueDate);
+        var command = new CreateTaskCommand
+        {
+            Title = input.Title,
+            Description = input.Description,
+            DueDate = input.DueDate
+        };
 
         var result = await mediator.Send(command, cancellationToken);
 
@@ -37,7 +40,7 @@ public record CreateTaskInput(
     string Description,
     DateTime? DueDate = null);
 
-public record CreateTaskPayload(CreateTaskResult Task);
+public record CreateTaskPayload(CreateTaskResponseDto Task);
 
 public record DeleteTaskInput(Guid Id);
 
@@ -68,9 +71,9 @@ public class CreateTaskPayloadType : ObjectType<CreateTaskPayload>
     }
 }
 
-public class CreateTaskResultType : ObjectType<CreateTaskResult>
+public class CreateTaskResultType : ObjectType<CreateTaskResponseDto>
 {
-    protected override void Configure(IObjectTypeDescriptor<CreateTaskResult> descriptor)
+    protected override void Configure(IObjectTypeDescriptor<CreateTaskResponseDto> descriptor)
     {
         descriptor.Field(f => f.Id)
             .Type<NonNullType<IdType>>();

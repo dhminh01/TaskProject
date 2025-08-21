@@ -4,10 +4,11 @@ using Microsoft.Extensions.Logging;
 using TaskService.Domain.Entities;
 using TaskService.Domain.Events;
 using TaskService.Domain.Interfaces;
+using TaskService.Application.Tasks.DTOs;
 
 namespace TaskService.Application.Tasks.Commands.CreateTask;
 
-public class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand, CreateTaskResult>
+public class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand, CreateTaskResponseDto>
 {
     private readonly ITaskRepository _taskRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -26,7 +27,7 @@ public class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand, Creat
         _logger = logger;
     }
 
-    public async Task<CreateTaskResult> Handle(CreateTaskCommand request, CancellationToken cancellationToken)
+    public async Task<CreateTaskResponseDto> Handle(CreateTaskCommand request, CancellationToken cancellationToken)
     {
         var taskItem = new TaskItem(
             request.Title,
@@ -55,7 +56,7 @@ public class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand, Creat
             throw;
         }
 
-        return new CreateTaskResult(
+        return new CreateTaskResponseDto(
             taskItem.Id,
             taskItem.Title,
             taskItem.Description,

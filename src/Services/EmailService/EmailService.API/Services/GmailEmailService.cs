@@ -50,6 +50,13 @@ namespace EmailService.API.Services
 
         public async Task SendEmailAsync(string to, string subject, string body)
         {
+            if (string.IsNullOrEmpty(to))
+                throw new ArgumentException("Recipient address is required", nameof(to));
+            if (string.IsNullOrEmpty(subject))
+                throw new ArgumentException("Subject is required", nameof(subject));
+            if (string.IsNullOrEmpty(body))
+                throw new ArgumentException("Body is required", nameof(body));
+
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress("Task Service", _fromEmail));
             message.To.Add(new MailboxAddress("", to));

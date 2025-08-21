@@ -2,14 +2,12 @@
 using EmailService.API.Consumers;
 using EmailService.API.Services;
 using MassTransit;
-using TaskProject.EmailService;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 
-// EmailService is the gRPC server, so we don't need gRPC client configuration here
 
 // Configure services
 builder.Services.AddMassTransit(x =>
@@ -48,7 +46,7 @@ builder.WebHost.ConfigureKestrel(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-app.MapGrpcService<EmailNotificationService>();
+// app.MapGrpcService<EmailNotificationService>();
 app.MapGrpcReflectionService();
 
 await app.RunAsync();

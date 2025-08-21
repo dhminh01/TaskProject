@@ -1,13 +1,12 @@
-using Microsoft.Extensions.Logging;
-using TaskProject.EmailService;
+using TaskProject.Proto;
 
-namespace TaskService.API.Services;
+namespace TaskService.API.Consumers;
 
-public class EmailNotificationHandler
+public class EmailConfirmationHandler
 {
-    private readonly ILogger<EmailNotificationHandler> _logger;
+    private readonly ILogger<EmailConfirmationHandler> _logger;
 
-    public EmailNotificationHandler(ILogger<EmailNotificationHandler> logger)
+    public EmailConfirmationHandler(ILogger<EmailConfirmationHandler> logger)
     {
         _logger = logger;
     }
@@ -21,7 +20,7 @@ public class EmailNotificationHandler
             _logger.LogDebug("Starting to process email notification for task {TaskId}", notification.TaskId);
 
             _logger.LogInformation(
-                "✉️ Email notification received - Task {TaskId} email status: {Status}",
+                "Email notification received - Task {TaskId} email status: {Status}",
                 notification.TaskId,
                 notification.EmailStatus);
 

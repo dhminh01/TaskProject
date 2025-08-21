@@ -1,6 +1,8 @@
 syntax = "proto3";
 
-option csharp_namespace = "TaskProject.EmailService";
+option csharp_namespace = "TaskProject.Proto";
+
+import "google/protobuf/timestamp.proto";
 
 package tasknotification;
 
@@ -10,8 +12,9 @@ service EmailNotification {
 
 message EmailSentRequest {
   string task_id = 1;
-  string email_status = 2;
-  string sent_timestamp = 3;
+  string task_title = 2;
+  string email_status = 3;
+  google.protobuf.Timestamp sent_timestamp = 4;
 }
 
 message EmailSentResponse {

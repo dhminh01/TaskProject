@@ -1,7 +1,7 @@
 using MediatR;
-using TaskService.Domain.Entities;
+using TaskService.Application.Tasks.DTOs;
 
 namespace TaskService.Application.Tasks.Queries;
 
-public record GetAllTasksQuery : IRequest<IEnumerable<TaskItem>>;
+public record GetAllTasksQuery : IRequest<IEnumerable<GetAllTasksRequestDto>>;
 

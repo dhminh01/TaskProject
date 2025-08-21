@@ -1,10 +1,10 @@
 using MediatR;
-using TaskService.Domain.Entities;
+using TaskService.Application.Tasks.DTOs;
 using TaskService.Domain.Interfaces;
 
 namespace TaskService.Application.Tasks.Queries;
 
-public class GetAllTasksHandler : IRequestHandler<GetAllTasksQuery, IEnumerable<TaskItem>>
+public class GetAllTasksHandler : IRequestHandler<GetAllTasksQuery, IEnumerable<GetAllTasksRequestDto>>
 {
     private readonly ITaskRepository _taskRepository;
 
@@ -13,8 +13,16 @@ public class GetAllTasksHandler : IRequestHandler<GetAllTasksQuery, IEnumerable<
         _taskRepository = taskRepository;
     }
 
-    public async Task<IEnumerable<TaskItem>> Handle(GetAllTasksQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<GetAllTasksRequestDto>> Handle(GetAllTasksQuery request, CancellationToken cancellationToken)
     {
-        return await _taskRepository.GetAllAsync(cancellationToken);
+        var tasks = await _taskRepository.GetAllAsync(cancellationToken);
+        return tasks.Select(task => new GetAllTasksRequestDto
+        {
+            Id = task.Id,
+            Title = task.Title,
+            Description = task.Description,
+            DueDate = task.DueDate,
+            DateCreated = task.DateCreated
+        });
     }
 }

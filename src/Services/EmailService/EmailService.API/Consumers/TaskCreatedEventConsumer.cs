@@ -1,7 +1,7 @@
 using EmailService.API.Services;
 using MassTransit;
 using TaskService.Domain.Events;
-using TaskProject.EmailService;
+using TaskProject.Proto;
 
 namespace EmailService.API.Consumers;
 
@@ -9,13 +9,16 @@ public class TaskCreatedEventConsumer : IConsumer<TaskCreatedEvent>
 {
     private readonly IEmailService _emailService;
     private readonly ILogger<TaskCreatedEventConsumer> _logger;
+    private readonly IConfiguration _configuration;
 
     public TaskCreatedEventConsumer(
         IEmailService emailService,
-        ILogger<TaskCreatedEventConsumer> logger)
+        ILogger<TaskCreatedEventConsumer> logger,
+        IConfiguration configuration)
     {
         _emailService = emailService;
         _logger = logger;
+        _configuration = configuration;
     }
 
     public async Task Consume(ConsumeContext<TaskCreatedEvent> context)
@@ -35,8 +38,10 @@ Description: {@event.Description}
 Due Date: {@event.DueDate:yyyy-MM-dd}";
 
             // Send email notification
+            var recipientEmail = _configuration["Gmail:RecipientEmail"]
+                ?? throw new InvalidOperationException("Recipient email is not configured");
             await _emailService.SendEmailAsync(
-                "dhminh.work@gmail.com",  // Replace with actual recipient
+                recipientEmail,
                 subject,
                 body);
 
@@ -46,7 +51,9 @@ Due Date: {@event.DueDate:yyyy-MM-dd}";
             await context.Publish(new EmailSentRequest
             {
                 TaskId = @event.TaskId.ToString(),
+                TaskTitle = @event.Title,
                 EmailStatus = "Sent",
+                SentTimestamp = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow)
             });
 
             // Publish email sent notification

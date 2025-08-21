@@ -11,8 +11,7 @@ using TaskService.Domain.Interfaces;
 using TaskService.Infrastructure.Persistence;
 using TaskService.Infrastructure.Repositories;
 using MassTransit;
-using TaskProject.EmailService;
-using TaskService.API.Services;
+using TaskProject.Proto;
 using TaskService.API.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,7 +34,7 @@ builder.Services.AddGrpcClient<EmailNotification.EmailNotificationClient>(option
 });
 
 // Register EmailNotificationHandler
-builder.Services.AddScoped<EmailNotificationHandler>();
+builder.Services.AddScoped<EmailConfirmationHandler>();
 
 // Database
 builder.Services.AddDbContext<TaskDbContext>(options =>
@@ -60,7 +59,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskCommandValidator>
 // MassTransit
 builder.Services.AddMassTransit(x =>
 {
-    x.AddConsumer<EmailSentNotificationConsumer>();
+    x.AddConsumer<EmailConfirmationConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {
@@ -70,15 +69,17 @@ builder.Services.AddMassTransit(x =>
             h.Password("guest");
         });
 
-        cfg.ReceiveEndpoint("email-sent-notifications", e =>
+        cfg.ReceiveEndpoint("email-sent-confirmations", e =>
         {
             // Set queue properties
             e.Durable = true;
             e.AutoDelete = false;
 
             // Configure the consumer
-            e.ConfigureConsumer<EmailSentNotificationConsumer>(context);
+            e.ConfigureConsumer<EmailConfirmationConsumer>(context);
         });
+
+        cfg.PrefetchCount = 5;
     });
 });
 

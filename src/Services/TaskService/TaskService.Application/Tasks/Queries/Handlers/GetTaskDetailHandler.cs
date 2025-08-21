@@ -1,9 +1,10 @@
 using MediatR;
+using TaskService.Application.Tasks.DTOs;
 using TaskService.Domain.Interfaces;
 
 namespace TaskService.Application.Tasks.Queries.GetTaskDetail;
 
-public class GetTaskDetailHandler : IRequestHandler<GetTaskDetailQuery, GetTaskDetailResult?>
+public class GetTaskDetailHandler : IRequestHandler<GetTaskDetailQuery, GetTaskDetailDto?>
 {
     private readonly ITaskRepository _taskRepository;
 
@@ -12,14 +13,14 @@ public class GetTaskDetailHandler : IRequestHandler<GetTaskDetailQuery, GetTaskD
         _taskRepository = taskRepository;
     }
 
-    public async Task<GetTaskDetailResult?> Handle(GetTaskDetailQuery request, CancellationToken cancellationToken)
+    public async Task<GetTaskDetailDto?> Handle(GetTaskDetailQuery request, CancellationToken cancellationToken)
     {
         var taskItem = await _taskRepository.GetByIdAsync(request.Id, cancellationToken);
 
         if (taskItem is null)
             return null;
 
-        return new GetTaskDetailResult(
+        return new GetTaskDetailDto(
             taskItem.Id,
             taskItem.Title,
             taskItem.Description,
