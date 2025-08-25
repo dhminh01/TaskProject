@@ -35,17 +35,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailService.Infrastructure
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailService.Worker", "src\Services\EmailService\EmailService.Worker\EmailService.Worker.csproj", "{C43E9356-BDAB-4245-AE18-2FFE462DA829}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{077141F6-308B-4D76-BF61-F5250077212A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskService.FunctionalTests", "tests\TaskService.FunctionalTests\TaskService.FunctionalTests.csproj", "{1560A1D4-CF7C-4849-8CBE-B32992A81C1F}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{CD547207-1598-4F71-8A18-9BED451388CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -92,10 +85,9 @@ Global
 		{C43E9356-BDAB-4245-AE18-2FFE462DA829}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C43E9356-BDAB-4245-AE18-2FFE462DA829}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C43E9356-BDAB-4245-AE18-2FFE462DA829}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1560A1D4-CF7C-4849-8CBE-B32992A81C1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1560A1D4-CF7C-4849-8CBE-B32992A81C1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1560A1D4-CF7C-4849-8CBE-B32992A81C1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1560A1D4-CF7C-4849-8CBE-B32992A81C1F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{9B6C85FA-DCD2-49C1-B99C-1AF91D1C0677} = {85F571D8-C84B-44A9-91F5-02D0074B5472}
@@ -113,6 +105,5 @@ Global
 		{A85E9B40-943D-4B79-BB9C-BA49AC4310A9} = {696A92BF-86DF-4920-AA03-9E628F3F7048}
 		{A14FF37F-1D01-470F-82B9-B98D0BA1F39B} = {696A92BF-86DF-4920-AA03-9E628F3F7048}
 		{C43E9356-BDAB-4245-AE18-2FFE462DA829} = {696A92BF-86DF-4920-AA03-9E628F3F7048}
-		{1560A1D4-CF7C-4849-8CBE-B32992A81C1F} = {077141F6-308B-4D76-BF61-F5250077212A}
 	EndGlobalSection
 EndGlobal

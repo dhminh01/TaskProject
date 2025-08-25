@@ -25,7 +25,10 @@ public class EmailConfirmationConsumer : IConsumer<EmailSentRequest>
         {
             _logger.LogInformation("Started processing email sent notification for task {TaskId}", notification.TaskId);
 
-            await _emailConfirmationHandler.HandleEmailNotification(notification);
+            await _emailConfirmationHandler.HandleEmailNotification(
+                notification.TaskId,
+                notification.TaskTitle,
+                notification.EmailStatus);
 
             _logger.LogInformation("Successfully processed email sent notification for task \"{TaskTitle}\" at {TimeStamp}", notification.TaskTitle, notification.SentTimestamp);
         }

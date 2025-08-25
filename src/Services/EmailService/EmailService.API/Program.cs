@@ -46,7 +46,7 @@ builder.WebHost.ConfigureKestrel(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-// app.MapGrpcService<EmailNotificationService>();
+app.MapGrpcService<EmailNotificationService>();
 app.MapGrpcReflectionService();
 
 await app.RunAsync();

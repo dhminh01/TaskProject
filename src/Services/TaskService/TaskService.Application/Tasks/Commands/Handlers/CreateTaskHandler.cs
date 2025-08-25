@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using TaskService.Domain.Entities;
 using TaskService.Domain.Events;
 using TaskService.Domain.Interfaces;
+using TaskService.Domain.Common.Exceptions;
 using TaskService.Application.Tasks.DTOs;
 
 namespace TaskService.Application.Tasks.Commands.CreateTask;
@@ -29,12 +30,24 @@ public class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand, Creat
 
     public async Task<CreateTaskResponseDto> Handle(CreateTaskCommand request, CancellationToken cancellationToken)
     {
+        // Validate due date
+        if (request.DueDate.HasValue && request.DueDate.Value <= DateTime.Now)
+        {
+            throw new InvalidDueDateException();
+        }
+
+        // Check for duplicate title
+        var existingTask = await _taskRepository.GetByTitleAsync(request.Title, cancellationToken);
+        if (existingTask != null)
+        {
+            throw new DuplicateTaskTitleException(request.Title);
+        }
+
         var taskItem = new TaskItem(
             request.Title,
             request.Description,
             request.DueDate);
 
-        // Add domain event
         var taskCreatedEvent = new TaskCreatedEvent(
             taskItem.Id,
             taskItem.Title,

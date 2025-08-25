@@ -3,6 +3,7 @@ using TaskService.Application.Tasks.Commands.CreateTask;
 using TaskService.Domain.Entities;
 using TaskService.Domain.Events;
 using TaskService.Domain.Interfaces;
+using TaskService.Domain.Common.Exceptions;
 using FluentAssertions;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -35,11 +36,15 @@ public class CreateTaskCommandHandlerTest
     public async Task Handle_ValidCommand_ShouldCreateTaskAndPublishEvent()
     {
         // Arrange
-        var command = new CreateTaskCommand(
-            "Test Task",
-            "Test Description",
-            DateTime.UtcNow.AddDays(1)
-        );
+        var command = new CreateTaskCommand
+        {
+            Title = "Test Task",
+            Description = "Test Description",
+            DueDate = DateTime.UtcNow.AddDays(1)
+        };
+
+        _taskRepositoryMock.Setup(x => x.GetByTitleAsync(command.Title, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(null as TaskItem);
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -64,15 +69,54 @@ public class CreateTaskCommandHandlerTest
     }
 
     [Fact]
+    public async Task Handle_DuplicateTitle_ShouldThrowDuplicateTaskTitleException()
+    {
+        // Arrange
+        var command = new CreateTaskCommand
+        {
+            Title = "Test Task",
+            Description = "Test Description",
+            DueDate = DateTime.UtcNow.AddDays(1)
+        };
+
+        var existingTask = new TaskItem("Test Task", "Existing Description", DateTime.UtcNow.AddDays(2));
+        _taskRepositoryMock.Setup(x => x.GetByTitleAsync(command.Title, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingTask);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DuplicateTaskTitleException>(() => _handler.Handle(command, CancellationToken.None));
+        _taskRepositoryMock.Verify(x => x.AddAsync(It.IsAny<TaskItem>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_PastDueDate_ShouldThrowInvalidDueDateException()
+    {
+        // Arrange
+        var command = new CreateTaskCommand
+        {
+            Title = "Test Task",
+            Description = "Test Description",
+            DueDate = DateTime.Now.AddDays(-1)
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidDueDateException>(() => _handler.Handle(command, CancellationToken.None));
+        _taskRepositoryMock.Verify(x => x.AddAsync(It.IsAny<TaskItem>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task Handle_WhenRepositoryThrowsException_ShouldPropagateException()
     {
         // Arrange
-        var command = new CreateTaskCommand(
-            "Test Task",
-            "Test Description",
-            DateTime.UtcNow.AddDays(1)
-        );
+        var command = new CreateTaskCommand
+        {
+            Title = "Test Task",
+            Description = "Test Description",
+            DueDate = DateTime.UtcNow.AddDays(1)
+        };
 
+        _taskRepositoryMock.Setup(x => x.GetByTitleAsync(command.Title, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(null as TaskItem);
         _taskRepositoryMock.Setup(x => x.AddAsync(It.IsAny<TaskItem>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Database error"));
 
@@ -84,12 +128,15 @@ public class CreateTaskCommandHandlerTest
     public async Task Handle_WhenPublishEndpointThrowsException_ShouldPropagateException()
     {
         // Arrange
-        var command = new CreateTaskCommand(
-            "Test Task",
-            "Test Description",
-            DateTime.UtcNow.AddDays(1)
-        );
+        var command = new CreateTaskCommand
+        {
+            Title = "Test Task",
+            Description = "Test Description",
+            DueDate = DateTime.UtcNow.AddDays(1)
+        };
 
+        _taskRepositoryMock.Setup(x => x.GetByTitleAsync(command.Title, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(null as TaskItem);
         _publishEndpointMock.Setup(x => x.Publish(It.IsAny<TaskCreatedEvent>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Publisher error"));
 

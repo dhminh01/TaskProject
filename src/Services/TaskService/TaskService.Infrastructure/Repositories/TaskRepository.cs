@@ -20,6 +20,12 @@ public class TaskRepository : ITaskRepository
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
 
+    public async Task<TaskItem?> GetByTitleAsync(string title, CancellationToken cancellationToken = default)
+    {
+        return await _context.TaskItems
+            .FirstOrDefaultAsync(t => t.Title == title, cancellationToken);
+    }
+
     public async Task<List<TaskItem>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context.TaskItems
