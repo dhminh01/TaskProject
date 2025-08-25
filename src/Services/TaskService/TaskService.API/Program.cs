@@ -90,17 +90,22 @@ builder.Services
     .AddMutationType<TaskMutations>()
     .AddType<CreateTaskInputType>()
     .AddType<CreateTaskPayloadType>()
-    .AddType<CreateTaskResultType>();
+    .AddType<CreateTaskResultType>()
+    .AddType<DeleteTaskInputType>()
+    .AddType<DeleteTaskPayloadType>()
+    .AddType<TaskType>()
+    .AddType<TaskDetailType>();
 
 // CORS
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
+    options.AddPolicy("AllowReactApp",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5173") // your React app URL
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
 });
 
 // Allow HTTP/2 without TLS
@@ -130,7 +135,7 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
 }
 
-app.UseCors();
+app.UseCors("AllowReactApp");
 app.UseRouting();
 
 app.MapGraphQL("/api/task");

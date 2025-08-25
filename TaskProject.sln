@@ -3,21 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{85F571D8-C84B-44A9-91F5-02D0074B5472}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildingBlocks", "BuildingBlocks", "{9B6C85FA-DCD2-49C1-B99C-1AF91D1C0677}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.Contracts", "src\BuildingBlocks\Shared.Contracts\Shared.Contracts.csproj", "{CD547207-1598-4F71-8A18-9BED451388CF}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.Grpc", "src\BuildingBlocks\Shared.Grpc\Shared.Grpc.csproj", "{A3E74FD8-1D03-4C80-B6E7-6423593A81C1}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.Messaging", "src\BuildingBlocks\Shared.Messaging\Shared.Messaging.csproj", "{1DE7CC59-AD64-4E25-AC8E-A5E926F27747}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.Infrastructure", "src\BuildingBlocks\Shared.Infrastructure\Shared.Infrastructure.csproj", "{BB908377-71FE-43EA-8918-7BF859A0C8EA}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{52782833-AB73-44BB-B2E0-A678823317FA}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TaskService", "TaskService", "{3AC4E944-6CDB-4640-9200-B0D047A9DAF9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskService.Domain", "src\Services\TaskService\TaskService.Domain\TaskService.Domain.csproj", "{6DD42BD9-C764-4831-9F81-5164DCB41260}"
 EndProject
@@ -27,13 +12,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskService.Infrastructure"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskService.Api", "src\Services\TaskService\TaskService.Api\TaskService.Api.csproj", "{C1B23FC1-94F7-465B-8741-14E6DB0B8C44}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EmailService", "EmailService", "{696A92BF-86DF-4920-AA03-9E628F3F7048}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailService.API", "src\Services\EmailService\EmailService.API\EmailService.API.csproj", "{39ABEA6C-DFDD-4725-8D93-2E467F369A7E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailService.Application", "src\Services\EmailService\EmailService.Application\EmailService.Application.csproj", "{A85E9B40-943D-4B79-BB9C-BA49AC4310A9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailService.FunctionalTests", "src\Services\EmailService\EmailService.FunctionalTests\EmailService.FunctionalTests.csproj", "{B3C33610-FAB3-4C12-A5FD-354D701C2124}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailService.Infrastructure", "src\Services\EmailService\EmailService.Infrastructure\EmailService.Infrastructure.csproj", "{A14FF37F-1D01-470F-82B9-B98D0BA1F39B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailService.Worker", "src\Services\EmailService\EmailService.Worker\EmailService.Worker.csproj", "{C43E9356-BDAB-4245-AE18-2FFE462DA829}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskService.FunctionalTests", "src\Services\TaskService\TaskService.FunctionalTests\TaskService.FunctionalTests.csproj", "{C53A1C12-A6A4-4FB3-97F4-92B1BDA5B6FA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -85,6 +68,18 @@ Global
 		{C43E9356-BDAB-4245-AE18-2FFE462DA829}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C43E9356-BDAB-4245-AE18-2FFE462DA829}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C43E9356-BDAB-4245-AE18-2FFE462DA829}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39ABEA6C-DFDD-4725-8D93-2E467F369A7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39ABEA6C-DFDD-4725-8D93-2E467F369A7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39ABEA6C-DFDD-4725-8D93-2E467F369A7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39ABEA6C-DFDD-4725-8D93-2E467F369A7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3C33610-FAB3-4C12-A5FD-354D701C2124}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3C33610-FAB3-4C12-A5FD-354D701C2124}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3C33610-FAB3-4C12-A5FD-354D701C2124}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3C33610-FAB3-4C12-A5FD-354D701C2124}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C53A1C12-A6A4-4FB3-97F4-92B1BDA5B6FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C53A1C12-A6A4-4FB3-97F4-92B1BDA5B6FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C53A1C12-A6A4-4FB3-97F4-92B1BDA5B6FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C53A1C12-A6A4-4FB3-97F4-92B1BDA5B6FA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -105,5 +100,9 @@ Global
 		{A85E9B40-943D-4B79-BB9C-BA49AC4310A9} = {696A92BF-86DF-4920-AA03-9E628F3F7048}
 		{A14FF37F-1D01-470F-82B9-B98D0BA1F39B} = {696A92BF-86DF-4920-AA03-9E628F3F7048}
 		{C43E9356-BDAB-4245-AE18-2FFE462DA829} = {696A92BF-86DF-4920-AA03-9E628F3F7048}
+		{E56F7DCA-4936-4361-BFC9-087DD9E3FC1D} = {52782833-AB73-44BB-B2E0-A678823317FA}
+		{39ABEA6C-DFDD-4725-8D93-2E467F369A7E} = {E56F7DCA-4936-4361-BFC9-087DD9E3FC1D}
+		{B3C33610-FAB3-4C12-A5FD-354D701C2124} = {E56F7DCA-4936-4361-BFC9-087DD9E3FC1D}
+		{C53A1C12-A6A4-4FB3-97F4-92B1BDA5B6FA} = {3AC4E944-6CDB-4640-9200-B0D047A9DAF9}
 	EndGlobalSection
 EndGlobal
