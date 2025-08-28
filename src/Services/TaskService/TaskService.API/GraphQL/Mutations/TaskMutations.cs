@@ -44,6 +44,39 @@ public class TaskMutations
         var result = await mediator.Send(command, cancellationToken);
         return new DeleteTaskPayload(result);
     }
+
+    [GraphQLDescription("Update a task")]
+    public async Task<UpdateTaskPayload> UpdateTaskAsync(
+        UpdateTaskInput input,
+        [Service] IMediator mediator,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var command = new UpdateTaskCommand
+            {
+                Id = input.Id,
+                Title = input.Title,
+                Description = input.Description,
+                DueDate = input.DueDate
+            };
+
+            var result = await mediator.Send(command, cancellationToken);
+            return new UpdateTaskPayload(result);
+        }
+        catch (TaskNotFoundException ex)
+        {
+            throw new GraphQLException(new Error(ex.Message, "NOT_FOUND_ERROR"));
+        }
+        catch (TaskValidationException ex)
+        {
+            throw new GraphQLException(new Error(ex.Message, "VALIDATION_ERROR"));
+        }
+        catch (Exception)
+        {
+            throw new GraphQLException(new Error("An unexpected error occurred", "INTERNAL_ERROR"));
+        }
+    }
 }
 
 public record CreateTaskInput(
@@ -56,6 +89,14 @@ public record CreateTaskPayload(CreateTaskResponseDto Task);
 public record DeleteTaskInput(Guid Id);
 
 public record DeleteTaskPayload(bool Success);
+
+public record UpdateTaskInput(
+    Guid Id,
+    string Title,
+    string Description,
+    DateTime? DueDate = null);
+
+public record UpdateTaskPayload(UpdateTaskResponseDto Task);
 
 public class CreateTaskInputType : InputObjectType<CreateTaskInput>
 {
@@ -117,5 +158,56 @@ public class DeleteTaskPayloadType : ObjectType<DeleteTaskPayload>
     {
         descriptor.Field(f => f.Success)
             .Type<NonNullType<BooleanType>>();
+    }
+}
+
+public class UpdateTaskInputType : InputObjectType<UpdateTaskInput>
+{
+    protected override void Configure(IInputObjectTypeDescriptor<UpdateTaskInput> descriptor)
+    {
+        descriptor.Field(f => f.Id)
+            .Type<NonNullType<UuidType>>();
+
+        descriptor.Field(f => f.Title)
+            .Type<NonNullType<StringType>>();
+
+        descriptor.Field(f => f.Description)
+            .Type<NonNullType<StringType>>();
+
+        descriptor.Field(f => f.DueDate)
+            .Type<DateTimeType>();
+    }
+}
+
+public class UpdateTaskPayloadType : ObjectType<UpdateTaskPayload>
+{
+    protected override void Configure(IObjectTypeDescriptor<UpdateTaskPayload> descriptor)
+    {
+        descriptor.Field(f => f.Task)
+            .Type<UpdateTaskResultType>();
+    }
+}
+
+public class UpdateTaskResultType : ObjectType<UpdateTaskResponseDto>
+{
+    protected override void Configure(IObjectTypeDescriptor<UpdateTaskResponseDto> descriptor)
+    {
+        descriptor.Field(f => f.Id)
+            .Type<NonNullType<IdType>>();
+
+        descriptor.Field(f => f.Title)
+            .Type<NonNullType<StringType>>();
+
+        descriptor.Field(f => f.Description)
+            .Type<NonNullType<StringType>>();
+
+        descriptor.Field(f => f.DueDate)
+            .Type<DateTimeType>();
+
+        descriptor.Field(f => f.DateCreated)
+            .Type<NonNullType<DateTimeType>>();
+
+        descriptor.Field(f => f.DateModified)
+            .Type<DateTimeType>();
     }
 }

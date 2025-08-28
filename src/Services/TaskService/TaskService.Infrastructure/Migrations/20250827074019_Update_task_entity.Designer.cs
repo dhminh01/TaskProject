@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskService.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using TaskService.Infrastructure.Persistence;
 namespace TaskService.Infrastructure.Migrations
 {
     [DbContext(typeof(TaskDbContext))]
-    partial class TaskDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250827074019_Update_task_entity")]
+    partial class Update_task_entity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,7 +35,7 @@ namespace TaskService.Infrastructure.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("DateCreated");
 
-                    b.Property<DateTime?>("DateModified")
+                    b.Property<DateTime>("DateModified")
                         .HasColumnType("datetime2")
                         .HasColumnName("DateModified");
 

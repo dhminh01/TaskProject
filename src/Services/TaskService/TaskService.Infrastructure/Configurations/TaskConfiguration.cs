@@ -38,9 +38,8 @@ public class TaskItemConfiguration : IEntityTypeConfiguration<TaskItem>
             .HasColumnType("datetime2")
             .IsRequired();
 
-        builder.Property(t => t.DateUpdated)
-            .HasColumnName("DateUpdated")
-            .HasColumnType("datetime2")
-            .IsRequired();
+        builder.Property(t => t.DateModified)
+            .HasColumnName("DateModified")
+            .HasColumnType("datetime2");
     }
 }
