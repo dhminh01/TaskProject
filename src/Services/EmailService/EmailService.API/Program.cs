@@ -22,15 +22,43 @@ builder.Services.AddMassTransit(x =>
             h.Password("guest");
         });
 
-        cfg.ReceiveEndpoint("email-service-task-created", e =>
+        cfg.ReceiveEndpoint("email-service-task-created-v2", e =>
         {
+            // Set queue properties before configuring the consumer
+            e.Durable = true;
+            e.AutoDelete = false;
+
+            // Set message TTL to 1 hour (using integer milliseconds)
+            e.SetQueueArgument("x-message-ttl", 3600000);
+
+            // Enable dead letter queue
+            e.SetQueueArgument("x-dead-letter-exchange", "email-service-dlx");
+            e.SetQueueArgument("x-dead-letter-routing-key", "email-service-dlq");
+
+            // Configure retry policy
+            e.UseMessageRetry(r =>
+            {
+                r.Immediate(3); // Retry 3 times immediately
+                r.SetRetryPolicy(policy => policy.Interval(3, TimeSpan.FromSeconds(5))); // Then retry 3 more times with 5 second intervals
+            });
+
             e.ConfigureConsumer<TaskCreatedEventConsumer>(context);
+        });
+
+        // Configure dead letter queue
+        cfg.ReceiveEndpoint("email-service-dlq", e =>
+        {
+            e.Durable = true;
+            e.AutoDelete = false;
         });
     });
 });
 
-// Add Gmail email service
-builder.Services.AddTransient<IEmailService, GmailEmailService>();
+// Add logging
+builder.Services.AddLogging();
+
+// Add Gmail email service as singleton to prevent multiple token file access
+builder.Services.AddSingleton<IEmailService, GmailEmailService>();
 
 // Configure Kestrel to listen on both HTTP and HTTPS
 builder.WebHost.ConfigureKestrel(options =>
