@@ -23,3 +23,18 @@ export interface CreateTaskMutationVars {
     dueDate?: string | null;
   };
 }
+
+export interface UpdateTaskMutationData {
+  updateTask: {
+    task: Task;
+  };
+}
+
+export interface UpdateTaskMutationVars {
+  input: {
+    id: string;
+    title: string;
+    description: string;
+    dueDate?: string | null;
+  };
+}

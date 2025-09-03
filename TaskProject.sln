@@ -3,7 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskService.Domain", "src\Services\TaskService\TaskService.Domain\TaskService.Domain.csproj", "{6DD42BD9-C764-4831-9F81-5164DCB41260}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskService.Application", "src\Services\TaskService\TaskService.Application\TaskService.Application.csproj", "{1AF77A88-C638-4211-A869-12CF6852E2EF}"
@@ -17,6 +16,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailService.FunctionalTests", "src\Services\EmailService\EmailService.FunctionalTests\EmailService.FunctionalTests.csproj", "{B3C33610-FAB3-4C12-A5FD-354D701C2124}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskService.FunctionalTests", "src\Services\TaskService\TaskService.FunctionalTests\TaskService.FunctionalTests.csproj", "{C53A1C12-A6A4-4FB3-97F4-92B1BDA5B6FA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B10C7207-AD94-43CE-9BF8-3885B11A6E2E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Gateway", "Gateway", "{30E3B56C-0CA6-41E7-907C-A10F9AF7EDB9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gateway.API", "src\Gateway\Gateway.API\Gateway.API.csproj", "{E2CCEE96-405C-41A3-A369-54A2CB215A93}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -80,6 +85,10 @@ Global
 		{C53A1C12-A6A4-4FB3-97F4-92B1BDA5B6FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C53A1C12-A6A4-4FB3-97F4-92B1BDA5B6FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C53A1C12-A6A4-4FB3-97F4-92B1BDA5B6FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2CCEE96-405C-41A3-A369-54A2CB215A93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2CCEE96-405C-41A3-A369-54A2CB215A93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2CCEE96-405C-41A3-A369-54A2CB215A93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2CCEE96-405C-41A3-A369-54A2CB215A93}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -104,5 +113,7 @@ Global
 		{39ABEA6C-DFDD-4725-8D93-2E467F369A7E} = {E56F7DCA-4936-4361-BFC9-087DD9E3FC1D}
 		{B3C33610-FAB3-4C12-A5FD-354D701C2124} = {E56F7DCA-4936-4361-BFC9-087DD9E3FC1D}
 		{C53A1C12-A6A4-4FB3-97F4-92B1BDA5B6FA} = {3AC4E944-6CDB-4640-9200-B0D047A9DAF9}
+		{30E3B56C-0CA6-41E7-907C-A10F9AF7EDB9} = {B10C7207-AD94-43CE-9BF8-3885B11A6E2E}
+		{E2CCEE96-405C-41A3-A369-54A2CB215A93} = {30E3B56C-0CA6-41E7-907C-A10F9AF7EDB9}
 	EndGlobalSection
 EndGlobal

@@ -7,7 +7,7 @@ import { GET_TASKS } from "./graphql/queries";
 
 // Create Apollo Client
 const client = new ApolloClient({
-  link: new HttpLink({ uri: "http://localhost:5008/api/task" }),
+  link: new HttpLink({ uri: "http://localhost:5000/tasks" }),
   cache: new InMemoryCache(),
 });
 
