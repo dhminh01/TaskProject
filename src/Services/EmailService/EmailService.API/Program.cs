@@ -13,6 +13,7 @@ builder.Services.AddGrpcReflection();
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<TaskCreatedEventConsumer>();
+    x.AddConsumer<TaskUpdatedEventConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {
@@ -43,6 +44,29 @@ builder.Services.AddMassTransit(x =>
             });
 
             e.ConfigureConsumer<TaskCreatedEventConsumer>(context);
+        });
+
+        cfg.ReceiveEndpoint("email-service-task-updated-v2", e =>
+        {
+            // Set queue properties before configuring the consumer
+            e.Durable = true;
+            e.AutoDelete = false;
+
+            // Set message TTL to 1 hour (using integer milliseconds)
+            e.SetQueueArgument("x-message-ttl", 3600000);
+
+            // Enable dead letter queue
+            e.SetQueueArgument("x-dead-letter-exchange", "email-service-dlx");
+            e.SetQueueArgument("x-dead-letter-routing-key", "email-service-dlq");
+
+            // Configure retry policy
+            e.UseMessageRetry(r =>
+            {
+                r.Immediate(3); // Retry 3 times immediately
+                r.SetRetryPolicy(policy => policy.Interval(3, TimeSpan.FromSeconds(5))); // Then retry 3 more times with 5 second intervals
+            });
+
+            e.ConfigureConsumer<TaskUpdatedEventConsumer>(context);
         });
 
         // Configure dead letter queue
