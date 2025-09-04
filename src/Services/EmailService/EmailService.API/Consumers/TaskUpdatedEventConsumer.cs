@@ -31,11 +31,16 @@ public class TaskUpdatedEventConsumer : IConsumer<TaskUpdatedEvent>
 
             // Prepare email content
             var subject = $"Task Updated: {@event.Title}";
-            var body = $@"A task has been updated:
-                        
-Title: {@event.Title}
-Description: {@event.Description}
-Due Date: {@event.DueDate:yyyy-MM-dd}";
+            var body = $@"
+                <h2>Task Updated</h2>
+                <p>A task has been updated:</p>
+                <ul>
+                    <li><strong>Title:</strong> {@event.Title}</li>
+                    <li><strong>Description:</strong> {@event.Description}</li>
+                    <li><strong>Due Date:</strong> {@event.DueDate:dddd, MMMM dd, yyyy h:mm tt}</li>
+                    <li><strong>Updated At:</strong> {DateTime.UtcNow:dddd, MMMM dd, yyyy h:mm tt}</li>
+                </ul>
+            ";
 
             // Send email notification
             var recipientEmail = _configuration["Gmail:RecipientEmail"]

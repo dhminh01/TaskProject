@@ -96,7 +96,7 @@ namespace EmailService.API.Services
             message.To.Add(new MailboxAddress("", to));
             message.Subject = subject;
 
-            message.Body = new TextPart("plain")
+            message.Body = new TextPart("html")
             {
                 Text = body
             };

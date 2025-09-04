@@ -18,7 +18,7 @@ public class DuplicateTaskTitleException : TaskValidationException
 public class InvalidDueDateException : TaskValidationException
 {
     public InvalidDueDateException()
-        : base("Due date must be in the future")
+        : base("Due date must be a future")
     {
     }
 }

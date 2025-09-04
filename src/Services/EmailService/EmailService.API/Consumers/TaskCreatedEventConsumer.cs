@@ -31,11 +31,16 @@ public class TaskCreatedEventConsumer : IConsumer<TaskCreatedEvent>
 
             // Prepare email content
             var subject = $"New Task Created: {@event.Title}";
-            var body = $@"A new task has been created:
-                        
-Title: {@event.Title}
-Description: {@event.Description}
-Due Date: {@event.DueDate:yyyy-MM-dd}";
+            var body = $@"
+                <h2>New Task Created</h2>
+                <p>A new task has been created:</p>
+                <ul>
+                    <li><strong>Title:</strong> {@event.Title}</li>
+                    <li><strong>Description:</strong> {@event.Description}</li>
+                    <li><strong>Due Date:</strong> {@event.DueDate:dddd, MMMM dd, yyyy h:mm tt}</li>
+                    <li><strong>Created At:</strong> {DateTime.UtcNow:dddd, MMMM dd, yyyy h:mm tt}</li>
+                </ul>
+            ";
 
             // Send email notification
             var recipientEmail = _configuration["Gmail:RecipientEmail"]

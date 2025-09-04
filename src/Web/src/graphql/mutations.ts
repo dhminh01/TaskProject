@@ -27,3 +27,11 @@ export const UPDATE_TASK = gql`
     }
   }
 `;
+
+export const DELETE_TASK = gql`
+  mutation DeleteTask($input: DeleteTaskInput!) {
+    deleteTask(input: $input) {
+      success
+    }
+  }
+`;

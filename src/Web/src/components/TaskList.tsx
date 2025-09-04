@@ -1,14 +1,24 @@
 import { Table, Button, Space } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import type { Task } from "../types";
-import { useGetTasks } from "../hooks/useGetTasks";
+import type { GetTasksData, Task } from "../types";
 import { TaskFormModal } from "./TaskFormModal";
 import { useState } from "react";
+import { useQuery, useMutation } from "@apollo/client/react";
+import { GET_TASKS } from "../graphql/queries";
+import { DELETE_TASK } from "../graphql/mutations";
+import { Modal } from "antd";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 
 export function TaskList() {
-  const { loading, error, data } = useGetTasks();
+  const { loading, error, data, refetch } = useQuery<GetTasksData>(GET_TASKS);
   const [editingTask, setEditingTask] = useState<Task | undefined>();
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [deleteTask] = useMutation(DELETE_TASK, {
+    onCompleted: () => {
+      refetch(); // Refresh the task list after successful deletion
+    },
+  });
 
   if (error) return <p>Error: {error.message}</p>;
   if (!data) return null;
@@ -29,6 +39,35 @@ export function TaskList() {
   const handleCloseModal = () => {
     setEditingTask(undefined);
     setIsModalOpen(false);
+  };
+
+  const handleDelete = (task: Task) => {
+    Modal.confirm({
+      title: "Delete Task",
+      content: `Are you sure you want to delete "${task.title}"?`,
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk: async () => {
+        try {
+          await deleteTask({
+            variables: {
+              input: {
+                id: task.id,
+              },
+            },
+          });
+          Modal.success({
+            content: "Task deleted successfully!",
+          });
+        } catch (error) {
+          Modal.error({
+            title: "Error",
+            content: "Failed to delete task. Please try again.",
+          });
+        }
+      },
+    });
   };
 
   const columns: ColumnsType<Task> = [
@@ -72,9 +111,19 @@ export function TaskList() {
       width: 100,
       render: (_, record) => (
         <Space>
-          <Button type="link" onClick={() => handleEdit(record)}>
-            Edit
-          </Button>
+          <Button
+            type="link"
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
+            title="Edit"
+          />
+          <Button
+            type="link"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record)}
+            title="Delete"
+          />
         </Space>
       ),
     },
