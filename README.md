@@ -2,15 +2,15 @@
 
 This project is a Task Management system built with the following technologies:
 
-- **.NET 8**
+- [**.NET 8**](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 - **Microservice Architecture**
-- **Microsoft SQL Server**
-- **gRPC & Protobuf**
-- **CQRS & MediatR**
-- **MassTransit & RabbitMQ**
-- **Gmail API**
-- **React & Typescript**
-- **Ant Design**
+- [**Microsoft SQL Server**](https://www.microsoft.com/en-us/sql-server)
+- [**gRPC & Protobuf**](https://grpc.io/)
+- [**CQRS & MediatR**](https://github.com/jbogard/MediatR)
+- [**MassTransit & RabbitMQ**](https://masstransit.io/)
+- [**Gmail API**](https://developers.google.com/gmail/api)
+- [**React & Typescript**](https://react.dev/)
+- [**Ant Design**](https://ant.design/)
 
 # Development notes:
 
@@ -104,17 +104,3 @@ Migration guide available in docs/
 - No period at end of description
 - Reference issues when relevant
 - Use ! or BREAKING CHANGE for breaking changes
-
-### Tools
-
-- Commitizen: Interactive commit creation
-- Commitlint: Validate commit format
-- Husky: Git hooks for validation
-
-### Benefits
-
-- Consistent team standards
-- Automated changelog generation
-- Easy commit filtering
-- Better CI/CD integration
-- Cleaner Git history
