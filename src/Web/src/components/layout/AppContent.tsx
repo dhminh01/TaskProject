@@ -1,14 +1,13 @@
 import { Layout, Typography } from "antd";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { MainMenu } from "./MainMenu";
-import { AppRoutes } from "../routes/AppRoutes";
+import { SideBar } from "./SideBar";
+import { AppRoutes } from "../../routes/AppRoutes";
 
-const { Header, Content, Sider } = Layout;
+const { Content, Sider } = Layout;
 const { Title } = Typography;
 
 export function AppContent() {
-  const location = useLocation();
   const navigate = useNavigate();
 
   return (
@@ -42,25 +41,9 @@ export function AppContent() {
             Task Manager
           </Title>
         </div>
-        <MainMenu />
+        <SideBar />
       </Sider>
       <Layout style={{ marginLeft: 200 }}>
-        <Header
-          style={{
-            background: "#fff",
-            borderBottom: "1px solid #f0f0f0",
-            padding: "0 24px",
-            position: "sticky",
-            top: 0,
-            zIndex: 1,
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
-          <Title level={3} style={{ margin: "16px 0" }}>
-            {location.pathname === "/" ? "Dashboard" : "Tasks"}
-          </Title>
-        </Header>
         <Content style={{ padding: "24px", minHeight: "calc(100vh - 64px)" }}>
           <AppRoutes />
         </Content>

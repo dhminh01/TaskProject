@@ -1,8 +1,12 @@
 import { Menu } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
-import { UnorderedListOutlined, DashboardOutlined } from "@ant-design/icons";
+import {
+  UnorderedListOutlined,
+  DashboardOutlined,
+  FileAddOutlined,
+} from "@ant-design/icons";
 
-export function MainMenu() {
+export function SideBar() {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -11,6 +15,11 @@ export function MainMenu() {
       key: "/",
       icon: <DashboardOutlined />,
       label: "Dashboard",
+    },
+    {
+      key: "/create-task",
+      icon: <FileAddOutlined />,
+      label: "Create Task",
     },
     {
       key: "/tasks",

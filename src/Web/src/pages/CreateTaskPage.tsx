@@ -1,10 +1,10 @@
 import { Space } from "antd";
-import { TaskList } from "../components/layout/TaskList";
+import { CreateTaskForm } from "../components/form/CreateTaskForm";
 
-export function TaskPage() {
+export function CreateTaskPage() {
   return (
     <Space direction="vertical" size="large" style={{ width: "100%" }}>
-      <TaskList />
+      <CreateTaskForm />
     </Space>
   );
 }

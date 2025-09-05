@@ -51,12 +51,16 @@ builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(CreateTaskCommand).Assembly);
     cfg.RegisterServicesFromAssembly(typeof(GetTaskDetailQuery).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(DeleteTaskCommand).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(GetAllTasksQuery).Assembly);
+
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 });
 
 // FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskCommandValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateTaskCommandValidator>();
 
 // MassTransit
 builder.Services.AddMassTransit(x =>

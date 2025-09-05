@@ -3,6 +3,8 @@ using TaskService.Application.Tasks.Commands;
 using TaskService.Domain.Entities;
 using TaskService.Domain.Interfaces;
 using FluentAssertions;
+using MassTransit;
+using TaskService.Domain.Events;
 
 namespace TaskService.FunctionalTests.Handlers;
 
@@ -10,13 +12,15 @@ public class DeleteTaskHandlerTest
 {
     private readonly Mock<ITaskRepository> _taskRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IPublishEndpoint> _publishEndpointMock;
     private readonly DeleteTaskHandler _handler;
 
     public DeleteTaskHandlerTest()
     {
         _taskRepositoryMock = new Mock<ITaskRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
-        _handler = new DeleteTaskHandler(_unitOfWorkMock.Object, _taskRepositoryMock.Object);
+        _publishEndpointMock = new Mock<IPublishEndpoint>();
+        _handler = new DeleteTaskHandler(_unitOfWorkMock.Object, _taskRepositoryMock.Object, _publishEndpointMock.Object);
     }
 
     [Fact]
@@ -39,6 +43,14 @@ public class DeleteTaskHandlerTest
         _taskRepositoryMock.Verify(x => x.GetByIdAsync(taskId, It.IsAny<CancellationToken>()), Times.Once);
         _taskRepositoryMock.Verify(x => x.DeleteAsync(taskItem, It.IsAny<CancellationToken>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _publishEndpointMock.Verify(x => x.Publish(
+            It.Is<TaskDeletedEvent>(e =>
+                e.Id == taskItem.Id &&
+                e.Title == taskItem.Title &&
+                e.Description == taskItem.Description &&
+                e.DueDate == taskItem.DueDate),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact]

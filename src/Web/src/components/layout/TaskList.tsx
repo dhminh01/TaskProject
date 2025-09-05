@@ -1,13 +1,14 @@
 import { Table, Button, Space } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import type { GetTasksData, Task } from "../types";
-import { TaskFormModal } from "./TaskFormModal";
+import type { GetTasksData, Task } from "../../types";
 import { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client/react";
-import { GET_TASKS } from "../graphql/queries";
-import { DELETE_TASK } from "../graphql/mutations";
+import { GET_TASKS } from "../../graphql/queries";
+import { DELETE_TASK } from "../../graphql/mutations";
 import { Modal } from "antd";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { UpdateTaskModal } from "../modal/UpdateTaskModal";
+import toast from "react-hot-toast";
 
 export function TaskList() {
   const { loading, error, data, refetch } = useQuery<GetTasksData>(GET_TASKS);
@@ -19,6 +20,8 @@ export function TaskList() {
       refetch(); // Refresh the task list after successful deletion
     },
   });
+
+  const textSize = 15;
 
   if (error) return <p>Error: {error.message}</p>;
   if (!data) return null;
@@ -57,9 +60,7 @@ export function TaskList() {
               },
             },
           });
-          Modal.success({
-            content: "Task deleted successfully!",
-          });
+          toast.success("Task deleted successfully!");
         } catch (error) {
           Modal.error({
             title: "Error",
@@ -72,25 +73,29 @@ export function TaskList() {
 
   const columns: ColumnsType<Task> = [
     {
-      title: "No.",
-      key: "index",
-      width: 80,
-      render: (_text, _record, index) => (
-        <div style={{ textAlign: "justify" }}>{index + 1}</div>
-      ),
-    },
-    {
       title: "Title",
       dataIndex: "title",
       key: "title",
-      render: (text) => <div style={{ textAlign: "justify" }}>{text}</div>,
+      render: (text) => (
+        <div
+          style={{ width: "3rem", textAlign: "justify", fontSize: textSize }}
+        >
+          {text}
+        </div>
+      ),
     },
     {
       title: "Description",
       dataIndex: "description",
       key: "description",
       render: (text) => (
-        <div style={{ textAlign: "justify" }}>
+        <div
+          style={{
+            textAlign: "justify",
+            paddingRight: "5px",
+            fontSize: textSize,
+          }}
+        >
           {text || <em style={{ color: "#999" }}>—</em>}
         </div>
       ),
@@ -100,7 +105,13 @@ export function TaskList() {
       dataIndex: "dueDate",
       key: "dueDate",
       render: (date) => (
-        <div style={{ textAlign: "justify" }}>
+        <div
+          style={{
+            textAlign: "justify",
+            paddingRight: "5px",
+            fontSize: textSize,
+          }}
+        >
           {date ? new Date(date).toLocaleDateString() : "—"}
         </div>
       ),
@@ -139,7 +150,7 @@ export function TaskList() {
         locale={{ emptyText: "No tasks found" }}
         pagination={false}
       />
-      <TaskFormModal
+      <UpdateTaskModal
         open={isModalOpen}
         onClose={handleCloseModal}
         taskToEdit={editingTask}

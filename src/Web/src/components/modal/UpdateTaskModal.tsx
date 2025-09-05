@@ -1,79 +1,46 @@
 import { Modal, Form, Input, DatePicker, Button } from "antd";
 import { useMutation } from "@apollo/client/react";
-import { CREATE_NEW_TASK, UPDATE_TASK } from "../graphql/mutations";
-import { GET_TASKS } from "../graphql/queries";
+import { UPDATE_TASK } from "../../graphql/mutations";
+import { GET_TASKS } from "../../graphql/queries";
 import toast from "react-hot-toast";
 import { useEffect } from "react";
 import dayjs from "dayjs";
 import type {
-  CreateTaskMutationData,
-  CreateTaskMutationVars,
   UpdateTaskMutationData,
   UpdateTaskMutationVars,
   GetTasksData,
   Task,
-} from "../types";
+} from "../../types";
 
 const { TextArea } = Input;
 
-interface TaskFormModalProps {
+interface UpdateTaskModalProps {
   open: boolean;
   onClose: () => void;
   taskToEdit?: Task;
 }
 
-export function TaskFormModal({
+export function UpdateTaskModal({
   open,
   onClose,
   taskToEdit,
-}: TaskFormModalProps) {
+}: UpdateTaskModalProps) {
   const [form] = Form.useForm();
   const isEditing = !!taskToEdit;
 
-  // Reset form when modal is closed
-  useEffect(() => {
-    if (!open) {
-      form.resetFields();
-    }
-  }, [open, form]);
+  // // Reset form when modal is closed
+  // useEffect(() => {
+  //   if (!open) {
+  //     form.resetFields();
+  //   }
+  // }, [open, form]);
 
-  // Cleanup form when component unmounts
-  useEffect(() => {
-    return () => {
-      form.resetFields();
-    };
-  }, [form]);
-
-  const [createTask, { loading: createLoading, error: createError }] =
-    useMutation<CreateTaskMutationData, CreateTaskMutationVars>(
-      CREATE_NEW_TASK,
-      {
-        update(cache, { data }) {
-          const newTask = data?.createTask?.task;
-          if (!newTask) return;
-          try {
-            const existing = cache.readQuery<GetTasksData>({
-              query: GET_TASKS,
-            });
-            cache.writeQuery<GetTasksData>({
-              query: GET_TASKS,
-              data: { tasks: [newTask, ...(existing?.tasks ?? [])] },
-            });
-          } catch {}
-        },
-        onCompleted() {
-          toast.success("Task created successfully");
-          setTimeout(() => {
-            toast.success("An email notification has been sent");
-          }, 500);
-          form.resetFields();
-          onClose();
-        },
-        onError(err) {
-          toast.error(err.message);
-        },
-      }
-    );
+  // // Cleanup form when component unmounts
+  // useEffect(() => {
+  //   return () => {
+  //     form.resetFields();
+  //   };
+  // }, [form]);
 
   const [updateTask, { loading: updateLoading, error: updateError }] =
     useMutation<UpdateTaskMutationData, UpdateTaskMutationVars>(UPDATE_TASK, {
@@ -123,7 +90,7 @@ export function TaskFormModal({
         dueDate: taskToEdit.dueDate ? dayjs(taskToEdit.dueDate) : undefined,
       });
     } else {
-      form.resetFields();
+      // Clear form when not editing
     }
   }, [taskToEdit, open, form]);
 
@@ -148,12 +115,6 @@ export function TaskFormModal({
             },
           },
         });
-      } else {
-        await createTask({
-          variables: {
-            input,
-          },
-        });
       }
     } catch (err) {
       // Keep the form mounted in case of error
@@ -161,8 +122,8 @@ export function TaskFormModal({
     }
   };
 
-  const loading = createLoading || updateLoading;
-  const error = createError || updateError;
+  const loading = updateLoading;
+  const error = updateError;
 
   return (
     <Modal

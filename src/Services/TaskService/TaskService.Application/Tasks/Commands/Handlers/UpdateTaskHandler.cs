@@ -30,15 +30,15 @@ public class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand, Updat
 
     public async Task<UpdateTaskResponseDto> Handle(UpdateTaskCommand request, CancellationToken cancellationToken)
     {
-        // Validate due date
-        if (request.DueDate.HasValue)
-        {
-            var utcDueDate = request.DueDate.Value.ToUniversalTime();
-            if (utcDueDate <= DateTime.UtcNow)
-            {
-                throw new InvalidDueDateException();
-            }
-        }
+        // // Validate due date
+        // if (request.DueDate.HasValue)
+        // {
+        //     var utcDueDate = request.DueDate.Value.ToUniversalTime();
+        //     if (utcDueDate <= DateTime.UtcNow)
+        //     {
+        //         throw new InvalidDueDateException();
+        //     }
+        // }
 
         // Get the task
         var taskItem = await _taskRepository.GetByIdAsync(request.Id, cancellationToken);

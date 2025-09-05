@@ -77,6 +77,11 @@ public class TaskMutations
         {
             throw new GraphQLException(new Error(ex.Message, "VALIDATION_ERROR"));
         }
+        catch (FluentValidation.ValidationException ex)
+        {
+            var errorMessage = string.Join(", ", ex.Errors.Select(e => e.ErrorMessage));
+            throw new GraphQLException(new Error(errorMessage, "VALIDATION_ERROR"));
+        }
         catch (Exception)
         {
             throw new GraphQLException(new Error("An unexpected error occurred", "INTERNAL_ERROR"));
