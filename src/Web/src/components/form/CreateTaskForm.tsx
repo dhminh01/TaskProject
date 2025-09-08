@@ -110,7 +110,11 @@ export function CreateTaskForm() {
             name="dueDate"
             label={<span style={{ fontSize: textSize }}>Due Date</span>}
           >
-            <DatePicker style={{ width: "100%" }} />
+            <DatePicker
+              showTime={{ format: "HH:mm" }}
+              style={{ width: "100%" }}
+              format="YYYY-MM-DD HH:mm"
+            />
           </Form.Item>
 
           <Form.Item>

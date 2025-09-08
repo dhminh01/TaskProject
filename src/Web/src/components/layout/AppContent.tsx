@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { SideBar } from "./SideBar";
 import { AppRoutes } from "../../routes/AppRoutes";
+import { WaterMark } from "@ant-design/pro-components";
 
 const { Content, Sider } = Layout;
 const { Title } = Typography;
@@ -13,6 +14,9 @@ export function AppContent() {
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Toaster position="top-center" />
+      <WaterMark content={["蚂蚁集团", "多行文字"]}>
+        <div style={{ height: 500 }} />
+      </WaterMark>
       <Sider
         theme="light"
         width={200}

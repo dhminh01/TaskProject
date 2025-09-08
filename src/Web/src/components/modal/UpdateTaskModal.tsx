@@ -5,7 +5,12 @@ import { GET_TASKS } from "../../graphql/queries";
 import toast from "react-hot-toast";
 import { useEffect } from "react";
 import dayjs from "dayjs";
-import type { ITask, ITasksData, IUpdateTaskData, IUpdateTaskVars } from "../../helpers/types/taskTypes";
+import type {
+  ITask,
+  ITasksData,
+  IUpdateTaskData,
+  IUpdateTaskVars,
+} from "../../helpers/types/taskTypes";
 
 const { TextArea } = Input;
 
@@ -71,8 +76,8 @@ export function UpdateTaskModal({
         form.resetFields();
         onClose();
       },
-      onError(err) {
-        toast.error(err.message);
+      onError() {
+        // Keep the form mounted in case of error
       },
     });
 
@@ -142,7 +147,11 @@ export function UpdateTaskModal({
         </Form.Item>
 
         <Form.Item name="dueDate" label="Due Date">
-          <DatePicker style={{ width: "100%" }} />
+          <DatePicker
+            showTime={{ format: "HH:mm" }}
+            style={{ width: "100%" }}
+            format="YYYY-MM-DD HH:mm"
+          />
         </Form.Item>
 
         <Form.Item>

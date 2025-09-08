@@ -24,8 +24,8 @@ public class UpdateTaskCommandValidator : AbstractValidator<UpdateTaskCommand>
             .WithMessage("Description must not exceed 1000 characters");
 
         RuleFor(x => x.DueDate)
-            .Must(dueDate => !dueDate.HasValue || dueDate.Value > DateTime.Now)
-            .WithMessage("Due date must be in the future")
+            .Must(dueDate => !dueDate.HasValue || dueDate.Value > DateTime.UtcNow)
+            .WithMessage("Due date must be a future date and time")
             .When(x => x.DueDate.HasValue);
     }
 }

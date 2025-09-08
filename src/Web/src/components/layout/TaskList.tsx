@@ -78,11 +78,18 @@ export function TaskList() {
       key: "title",
       render: (text) => (
         <div
-          style={{ width: "3rem", textAlign: "justify", fontSize: textSize }}
+          style={{
+            maxWidth: "300px",
+            textAlign: "left",
+            fontSize: textSize,
+            whiteSpace: "normal",
+            wordBreak: "break-word",
+          }}
         >
           {text}
         </div>
       ),
+      width: 200,
     },
     {
       title: "Description",

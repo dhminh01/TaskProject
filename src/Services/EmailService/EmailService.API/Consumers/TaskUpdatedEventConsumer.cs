@@ -30,15 +30,36 @@ public class TaskUpdatedEventConsumer : IConsumer<TaskUpdatedEvent>
             _logger.LogInformation("Processing TaskUpdatedEvent for task {TaskId}", @event.Id);
 
             // Prepare email content
-            var subject = $"Task Updated: {@event.Title}";
+            var subject = $"Task Updated: {@event.NewTitle}";
+
+            var changes = new List<string>();
+            if (@event.OldTitle != @event.NewTitle)
+                changes.Add($"<li><strong>Title:</strong> Changed from \"{@event.OldTitle}\" to \"{@event.NewTitle}\"</li>");
+
+            if (@event.OldDescription != @event.NewDescription)
+                changes.Add($"<li><strong>Description:</strong> Changed from \"{@event.OldDescription}\" to \"{@event.NewDescription}\"</li>");
+
+            if (@event.OldDueDate != @event.NewDueDate)
+            {
+                var oldDueDate = @event.OldDueDate?.ToString("dddd, MMMM dd, yyyy h:mm tt") ?? "Not set";
+                var newDueDate = @event.NewDueDate?.ToString("dddd, MMMM dd, yyyy h:mm tt") ?? "Not set";
+                changes.Add($"<li><strong>Due Date:</strong> Changed from {oldDueDate} to {newDueDate}</li>");
+            }
+
+            var changesHtml = string.Join("\n", changes);
             var body = $@"
                 <h2>Task Updated</h2>
-                <p>A task has been updated:</p>
+                <p>The following changes were made to the task:</p>
                 <ul>
-                    <li><strong>Title:</strong> {@event.Title}</li>
-                    <li><strong>Description:</strong> {@event.Description}</li>
-                    <li><strong>Due Date:</strong> {@event.DueDate:dddd, MMMM dd, yyyy h:mm tt}</li>
-                    <li><strong>Updated At:</strong> {DateTime.UtcNow:dddd, MMMM dd, yyyy h:mm tt}</li>
+                    {changesHtml}
+                </ul>
+                <p><strong>Updated At:</strong> {@event.UpdatedAt:dddd, MMMM dd, yyyy h:mm tt}</p>
+                
+                <h3>Current Task Details:</h3>
+                <ul>
+                    <li><strong>Title:</strong> {@event.NewTitle}</li>
+                    <li><strong>Description:</strong> {@event.NewDescription}</li>
+                    <li><strong>Due Date:</strong> {@event.NewDueDate?.ToString("dddd, MMMM dd, yyyy h:mm tt") ?? "Not set"}</li>
                 </ul>
             ";
 
@@ -56,7 +77,7 @@ public class TaskUpdatedEventConsumer : IConsumer<TaskUpdatedEvent>
             await context.Publish(new EmailSentRequest
             {
                 TaskId = @event.Id.ToString(),
-                TaskTitle = @event.Title,
+                TaskTitle = @event.NewTitle,
                 EmailStatus = "Sent",
                 SentTimestamp = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow)
             });

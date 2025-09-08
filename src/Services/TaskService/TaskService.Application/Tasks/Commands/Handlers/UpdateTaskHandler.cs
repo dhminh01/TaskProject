@@ -57,6 +57,11 @@ public class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand, Updat
             }
         }
 
+        // Store old values before update
+        var oldTitle = taskItem.Title;
+        var oldDescription = taskItem.Description;
+        var oldDueDate = taskItem.DueDate;
+
         // Update the task
         taskItem.Update(request.Title, request.Description, request.DueDate);
 
@@ -65,9 +70,13 @@ public class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand, Updat
 
         var taskUpdatedEvent = new TaskUpdatedEvent(
             taskItem.Id,
+            oldTitle,
             taskItem.Title,
+            oldDescription,
             taskItem.Description,
-            taskItem.DueDate);
+            oldDueDate,
+            taskItem.DueDate,
+            DateTime.UtcNow);
 
         try
         {
