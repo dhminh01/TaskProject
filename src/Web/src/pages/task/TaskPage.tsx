@@ -1,5 +1,5 @@
 import { Space } from "antd";
-import { TaskList } from "../components/layout/TaskList";
+import { TaskList } from "../../components/layout/TaskList";
 
 export function TaskPage() {
   return (

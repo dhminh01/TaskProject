@@ -1,4 +1,4 @@
-export interface Task {
+export interface ITask {
   id: string;
   title: string;
   description: string;
@@ -6,17 +6,17 @@ export interface Task {
   dateCreated?: string;
 }
 
-export interface GetTasksData {
-  tasks: Task[];
+export interface ITasksData {
+  tasks: ITask[];
 }
 
-export interface CreateTaskMutationData {
+export interface ICreateTaskData {
   createTask: {
-    task: Task;
+    task: ITask;
   };
 }
 
-export interface CreateTaskMutationVars {
+export interface ICreateTaskVars {
   input: {
     title: string;
     description: string;
@@ -24,13 +24,13 @@ export interface CreateTaskMutationVars {
   };
 }
 
-export interface UpdateTaskMutationData {
+export interface IUpdateTaskData {
   updateTask: {
-    task: Task;
+    task: ITask;
   };
 }
 
-export interface UpdateTaskMutationVars {
+export interface IUpdateTaskVars {
   input: {
     id: string;
     title: string;

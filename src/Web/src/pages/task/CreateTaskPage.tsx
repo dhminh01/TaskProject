@@ -1,5 +1,5 @@
 import { Space } from "antd";
-import { CreateTaskForm } from "../components/form/CreateTaskForm";
+import { CreateTaskForm } from "../../components/form/CreateTaskForm";
 
 export function CreateTaskPage() {
   return (

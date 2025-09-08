@@ -1,15 +1,15 @@
 import { Form, Input, DatePicker, Button, Card, Space, Typography } from "antd";
 import { useMutation } from "@apollo/client/react";
-import { CREATE_NEW_TASK } from "../../graphql/mutations";
+import { CREATE_TASK } from "../../graphql/mutations";
 import { GET_TASKS } from "../../graphql/queries";
 import toast from "react-hot-toast";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import type {
-  CreateTaskMutationData,
-  CreateTaskMutationVars,
-  GetTasksData,
-} from "../../types";
+  ICreateTaskData,
+  ICreateTaskVars,
+  ITasksData,
+} from "../../helpers/types/taskTypes";
 
 const { TextArea } = Input;
 const { Title } = Typography;
@@ -28,32 +28,29 @@ export function CreateTaskForm() {
   }, [form]);
 
   const [createTask, { loading: createLoading, error: createError }] =
-    useMutation<CreateTaskMutationData, CreateTaskMutationVars>(
-      CREATE_NEW_TASK,
-      {
-        update(cache, { data }) {
-          const newTask = data?.createTask?.task;
-          if (!newTask) return;
-          try {
-            const existing = cache.readQuery<GetTasksData>({
-              query: GET_TASKS,
-            });
-            cache.writeQuery<GetTasksData>({
-              query: GET_TASKS,
-              data: { tasks: [newTask, ...(existing?.tasks ?? [])] },
-            });
-          } catch {}
-        },
-        onCompleted() {
-          toast.success("Task created successfully");
-          setTimeout(() => {
-            toast.success("An email notification has been sent");
-          }, 500);
-          form.resetFields();
-          navigate("/tasks"); // Navigate back to the task list
-        },
-      }
-    );
+    useMutation<ICreateTaskData, ICreateTaskVars>(CREATE_TASK, {
+      update(cache, { data }) {
+        const newTask = data?.createTask?.task;
+        if (!newTask) return;
+        try {
+          const existing = cache.readQuery<ITasksData>({
+            query: GET_TASKS,
+          });
+          cache.writeQuery<ITasksData>({
+            query: GET_TASKS,
+            data: { tasks: [newTask, ...(existing?.tasks ?? [])] },
+          });
+        } catch {}
+      },
+      onCompleted() {
+        toast.success("Task created successfully");
+        setTimeout(() => {
+          toast.success("An email notification has been sent");
+        }, 500);
+        form.resetFields();
+        navigate("/tasks"); // Navigate back to the task list
+      },
+    });
 
   const onFinish = async (values: {
     title: string;

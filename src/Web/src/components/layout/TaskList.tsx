@@ -1,6 +1,5 @@
 import { Table, Button, Space } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import type { GetTasksData, Task } from "../../types";
 import { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { GET_TASKS } from "../../graphql/queries";
@@ -9,10 +8,11 @@ import { Modal } from "antd";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { UpdateTaskModal } from "../modal/UpdateTaskModal";
 import toast from "react-hot-toast";
+import type { ITask, ITasksData } from "../../helpers/types/taskTypes";
 
 export function TaskList() {
-  const { loading, error, data, refetch } = useQuery<GetTasksData>(GET_TASKS);
-  const [editingTask, setEditingTask] = useState<Task | undefined>();
+  const { loading, error, data, refetch } = useQuery<ITasksData>(GET_TASKS);
+  const [editingTask, setEditingTask] = useState<ITask | undefined>();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [deleteTask] = useMutation(DELETE_TASK, {
@@ -27,14 +27,14 @@ export function TaskList() {
   if (!data) return null;
 
   const tasks = (data.tasks ?? [])
-    .filter((t): t is Task => !!t && typeof t.id === "string")
+    .filter((t): t is ITask => !!t && typeof t.id === "string")
     .sort((a, b) => {
       const da = a.dateCreated ? Date.parse(a.dateCreated) : 0;
       const db = b.dateCreated ? Date.parse(b.dateCreated) : 0;
       return db - da; // newest first
     });
 
-  const handleEdit = (task: Task) => {
+  const handleEdit = (task: ITask) => {
     setEditingTask(task);
     setIsModalOpen(true);
   };
@@ -44,7 +44,7 @@ export function TaskList() {
     setIsModalOpen(false);
   };
 
-  const handleDelete = (task: Task) => {
+  const handleDelete = (task: ITask) => {
     Modal.confirm({
       title: "Delete Task",
       content: `Are you sure you want to delete "${task.title}"?`,
@@ -71,7 +71,7 @@ export function TaskList() {
     });
   };
 
-  const columns: ColumnsType<Task> = [
+  const columns: ColumnsType<ITask> = [
     {
       title: "Title",
       dataIndex: "title",

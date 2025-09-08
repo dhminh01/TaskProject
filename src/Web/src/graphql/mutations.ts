@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 
-export const CREATE_NEW_TASK = gql`
+export const CREATE_TASK = gql`
   mutation CreateTask($input: CreateTaskInput!) {
     createTask(input: $input) {
       task {

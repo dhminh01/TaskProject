@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { DashboardPage } from "../pages/DashboardPage";
-import { TaskPage } from "../pages/TaskPage";
-import { CreateTaskPage } from "../pages/CreateTaskPage";
+import { DashboardPage } from "../pages/dashboard/DashboardPage";
+import { TaskPage } from "../pages/task/TaskPage";
+import { CreateTaskPage } from "../pages/task/CreateTaskPage";
 
 export const AppRoutes = () => {
   return (

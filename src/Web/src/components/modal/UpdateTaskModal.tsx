@@ -5,19 +5,14 @@ import { GET_TASKS } from "../../graphql/queries";
 import toast from "react-hot-toast";
 import { useEffect } from "react";
 import dayjs from "dayjs";
-import type {
-  UpdateTaskMutationData,
-  UpdateTaskMutationVars,
-  GetTasksData,
-  Task,
-} from "../../types";
+import type { ITask, ITasksData, IUpdateTaskData, IUpdateTaskVars } from "../../helpers/types/taskTypes";
 
 const { TextArea } = Input;
 
 interface UpdateTaskModalProps {
   open: boolean;
   onClose: () => void;
-  taskToEdit?: Task;
+  taskToEdit?: ITask;
 }
 
 export function UpdateTaskModal({
@@ -43,12 +38,12 @@ export function UpdateTaskModal({
   // }, [form]);
 
   const [updateTask, { loading: updateLoading, error: updateError }] =
-    useMutation<UpdateTaskMutationData, UpdateTaskMutationVars>(UPDATE_TASK, {
+    useMutation<IUpdateTaskData, IUpdateTaskVars>(UPDATE_TASK, {
       update(cache, { data }) {
         const updatedTask = data?.updateTask?.task;
         if (!updatedTask) return;
         try {
-          const existing = cache.readQuery<GetTasksData>({ query: GET_TASKS });
+          const existing = cache.readQuery<ITasksData>({ query: GET_TASKS });
           if (!existing?.tasks) return;
 
           // Sort tasks to maintain the order (newest first)
@@ -60,7 +55,7 @@ export function UpdateTaskModal({
               return db - da;
             });
 
-          cache.writeQuery<GetTasksData>({
+          cache.writeQuery<ITasksData>({
             query: GET_TASKS,
             data: {
               tasks: updatedTasks,
