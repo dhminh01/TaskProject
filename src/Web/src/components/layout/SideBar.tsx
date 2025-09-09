@@ -17,14 +17,14 @@ export function SideBar() {
       label: "Dashboard",
     },
     {
-      key: "/create-task",
-      icon: <FileAddOutlined />,
-      label: "Create Task",
-    },
-    {
       key: "/tasks",
       icon: <UnorderedListOutlined />,
       label: "Tasks",
+    },
+    {
+      key: "/create-task",
+      icon: <FileAddOutlined />,
+      label: "Create Task",
     },
   ];
 

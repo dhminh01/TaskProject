@@ -22,3 +22,19 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Testing
+coverage
+.nyc_output
+*.lcov
+jest
+.vitest
+.e2e
+cypress/videos
+cypress/screenshots
+cypress/screenshots
+cypress/videos
+cypress/.cache
+cypress/reports
+cypress/results
+cypress/coverage

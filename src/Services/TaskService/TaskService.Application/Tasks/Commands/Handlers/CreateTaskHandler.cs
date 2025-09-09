@@ -30,15 +30,6 @@ public class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand, Creat
 
     public async Task<CreateTaskResponseDto> Handle(CreateTaskCommand request, CancellationToken cancellationToken)
     {
-        // // Validate due date
-        // if (request.DueDate.HasValue)
-        // {
-        //     var utcDueDate = request.DueDate.Value.ToUniversalTime();
-        //     if (utcDueDate <= DateTime.UtcNow)
-        //     {
-        //         throw new InvalidDueDateException();
-        //     }
-        // }
 
         // Check for duplicate title
         var existingTask = await _taskRepository.GetByTitleAsync(request.Title, cancellationToken);

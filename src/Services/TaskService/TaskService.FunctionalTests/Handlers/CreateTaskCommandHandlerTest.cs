@@ -8,6 +8,8 @@ using FluentAssertions;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using TaskService.Application.Tasks.Commands;
+using TaskService.Application.Tasks.Validators;
+using FluentValidation;
 
 namespace TaskService.FunctionalTests.Handlers;
 
@@ -18,6 +20,7 @@ public class CreateTaskCommandHandlerTest
     private readonly Mock<IPublishEndpoint> _publishEndpointMock;
     private readonly Mock<ILogger<CreateTaskCommandHandler>> _loggerMock;
     private readonly CreateTaskCommandHandler _handler;
+    private readonly IValidator<CreateTaskCommand> _validator;
 
     public CreateTaskCommandHandlerTest()
     {
@@ -25,6 +28,7 @@ public class CreateTaskCommandHandlerTest
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _publishEndpointMock = new Mock<IPublishEndpoint>();
         _loggerMock = new Mock<ILogger<CreateTaskCommandHandler>>();
+        _validator = new CreateTaskCommandValidator();
         _handler = new CreateTaskCommandHandler(
             _taskRepositoryMock.Object,
             _unitOfWorkMock.Object,
@@ -88,20 +92,28 @@ public class CreateTaskCommandHandlerTest
         _taskRepositoryMock.Verify(x => x.AddAsync(It.IsAny<TaskItem>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    [Fact]
-    public async Task Handle_PastDueDate_ShouldThrowInvalidDueDateException()
+    [Theory]
+    [InlineData(-1)] // Yesterday
+    [InlineData(-7)] // A week ago
+    [InlineData(-30)] // A month ago
+    public async Task Handle_PastDueDate_ShouldFailValidation(int daysOffset)
     {
         // Arrange
+        var pastDate = DateTime.UtcNow.Date.AddDays(daysOffset);
         var command = new CreateTaskCommand
         {
             Title = "Test Task",
             Description = "Test Description",
-            DueDate = DateTime.Now.AddDays(-1)
+            DueDate = pastDate
         };
 
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidDueDateException>(() => _handler.Handle(command, CancellationToken.None));
-        _taskRepositoryMock.Verify(x => x.AddAsync(It.IsAny<TaskItem>(), It.IsAny<CancellationToken>()), Times.Never);
+        // Act
+        var validationResult = await _validator.ValidateAsync(command);
+
+        // Assert
+        validationResult.IsValid.Should().BeFalse();
+        validationResult.Errors.Should().Contain(e => e.PropertyName == "DueDate" &&
+            e.ErrorMessage.Contains("future date", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

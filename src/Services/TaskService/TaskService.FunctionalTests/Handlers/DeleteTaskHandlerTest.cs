@@ -32,6 +32,8 @@ public class DeleteTaskHandlerTest
 
         _taskRepositoryMock.Setup(x => x.GetByIdAsync(taskId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(taskItem);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1); // Indicate one row was affected
 
         var command = new DeleteTaskCommand(taskId);
 

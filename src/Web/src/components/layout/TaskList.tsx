@@ -1,25 +1,32 @@
-import { Table, Button, Space } from "antd";
+import { Table, Button, Space, Spin } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useState } from "react";
-import { useQuery, useMutation } from "@apollo/client/react";
+import { useQuery } from "@apollo/client/react";
+import { useNavigate } from "react-router-dom";
 import { GET_TASKS } from "../../graphql/queries";
-import { DELETE_TASK } from "../../graphql/mutations";
-import { Modal } from "antd";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import useDebounce from "../../helpers/hooks/useDebounce";
 import { UpdateTaskModal } from "../modal/UpdateTaskModal";
-import toast from "react-hot-toast";
+import { DeleteTaskModal } from "../modal/DeleteTaskModal";
 import type { ITask, ITasksData } from "../../helpers/types/taskTypes";
 
 export function TaskList() {
-  const { loading, error, data, refetch } = useQuery<ITasksData>(GET_TASKS);
+  const navigate = useNavigate();
+  const {
+    loading: queryLoading,
+    error,
+    data,
+    refetch,
+  } = useQuery<ITasksData>(GET_TASKS);
   const [editingTask, setEditingTask] = useState<ITask | undefined>();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<ITask | undefined>();
+  const loading = useDebounce(queryLoading, 500);
 
-  const [deleteTask] = useMutation(DELETE_TASK, {
-    onCompleted: () => {
-      refetch(); // Refresh the task list after successful deletion
-    },
-  });
+  const handleCreateTask = () => {
+    navigate("/create-task");
+  };
 
   const textSize = 15;
 
@@ -36,39 +43,22 @@ export function TaskList() {
 
   const handleEdit = (task: ITask) => {
     setEditingTask(task);
-    setIsModalOpen(true);
+    setIsEditModalOpen(true);
   };
 
-  const handleCloseModal = () => {
+  const handleCloseEditModal = () => {
     setEditingTask(undefined);
-    setIsModalOpen(false);
+    setIsEditModalOpen(false);
   };
 
   const handleDelete = (task: ITask) => {
-    Modal.confirm({
-      title: "Delete Task",
-      content: `Are you sure you want to delete "${task.title}"?`,
-      okText: "Yes",
-      okType: "danger",
-      cancelText: "No",
-      onOk: async () => {
-        try {
-          await deleteTask({
-            variables: {
-              input: {
-                id: task.id,
-              },
-            },
-          });
-          toast.success("Task deleted successfully!");
-        } catch (error) {
-          Modal.error({
-            title: "Error",
-            content: "Failed to delete task. Please try again.",
-          });
-        }
-      },
-    });
+    setTaskToDelete(task);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setTaskToDelete(undefined);
+    setIsDeleteModalOpen(false);
   };
 
   const columns: ColumnsType<ITask> = [
@@ -148,20 +138,48 @@ export function TaskList() {
   ];
 
   return (
-    <>
+    <div style={{ position: "relative", minHeight: "200px" }}>
+      <div style={{ marginBottom: 16, textAlign: "left" }}>
+        <Button type="primary" onClick={handleCreateTask}>
+          Create New Task
+        </Button>
+      </div>
+      {loading && (
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(255, 255, 255, 0.7)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+          }}
+        >
+          <Spin size="large" />
+        </div>
+      )}
       <Table
         dataSource={tasks}
         columns={columns}
         rowKey="id"
-        loading={loading}
         locale={{ emptyText: "No tasks found" }}
         pagination={false}
       />
       <UpdateTaskModal
-        open={isModalOpen}
-        onClose={handleCloseModal}
+        open={isEditModalOpen}
+        onClose={handleCloseEditModal}
         taskToEdit={editingTask}
       />
-    </>
+      <DeleteTaskModal
+        open={isDeleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        taskToDelete={taskToDelete}
+        onDeleteSuccess={refetch}
+      />
+    </div>
   );
 }

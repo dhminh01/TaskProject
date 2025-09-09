@@ -1,4 +1,5 @@
 import { Form, Input, DatePicker, Button, Card, Space, Typography } from "antd";
+import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
 import { useMutation } from "@apollo/client/react";
 import { CREATE_TASK } from "../../graphql/mutations";
 import { GET_TASKS } from "../../graphql/queries";
@@ -46,9 +47,9 @@ export function CreateTaskForm() {
         toast.success("Task created successfully");
         setTimeout(() => {
           toast.success("An email notification has been sent");
+          form.resetFields();
+          navigate("/tasks"); // Navigate back to the task list
         }, 500);
-        form.resetFields();
-        navigate("/tasks"); // Navigate back to the task list
       },
     });
 
@@ -102,6 +103,7 @@ export function CreateTaskForm() {
           <Form.Item
             name="description"
             label={<span style={{ fontSize: textSize }}>Description</span>}
+            rules={[{ required: true, message: "Please enter a description" }]}
           >
             <TextArea placeholder="Enter task description" rows={3} />
           </Form.Item>
@@ -119,8 +121,12 @@ export function CreateTaskForm() {
 
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit" loading={createLoading}>
-                Create Task
+              <Button
+                type="primary"
+                htmlType="submit"
+                icon={createLoading ? <LoadingOutlined /> : <PlusOutlined />}
+              >
+                {createLoading ? "Creating..." : "Create Task"}
               </Button>
             </Space>
           </Form.Item>
