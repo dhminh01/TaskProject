@@ -1,10 +1,19 @@
-import { Form, Input, DatePicker, Button, Card, Space, Typography } from "antd";
-import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  Form,
+  Input,
+  DatePicker,
+  Button,
+  Card,
+  Space,
+  Typography,
+  type FormInstance,
+} from "antd";
+import { LoadingOutlined } from "@ant-design/icons";
 import { useMutation } from "@apollo/client/react";
 import { CREATE_TASK } from "../../graphql/mutations";
 import { GET_TASKS } from "../../graphql/queries";
 import toast from "react-hot-toast";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type {
   ICreateTaskData,
@@ -14,6 +23,34 @@ import type {
 
 const { TextArea } = Input;
 const { Title } = Typography;
+
+interface SubmitButtonProps {
+  form: FormInstance;
+  loading?: boolean;
+}
+
+const SubmitButton: React.FC<React.PropsWithChildren<SubmitButtonProps>> = ({
+  form,
+  children,
+}) => {
+  const [submittable, setSubmittable] = useState<boolean>(false);
+
+  // Watch all values
+  const values = Form.useWatch([], form);
+
+  useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setSubmittable(true))
+      .catch(() => setSubmittable(false));
+  }, [form, values]);
+
+  return (
+    <Button type="primary" htmlType="submit" disabled={!submittable}>
+      {children}
+    </Button>
+  );
+};
 
 export function CreateTaskForm() {
   const [form] = Form.useForm();
@@ -70,8 +107,9 @@ export function CreateTaskForm() {
           input,
         },
       });
-    } catch (err) {
+    } catch (err: any) {
       // Keep the form mounted in case of error
+      console.log(err);
       return;
     }
   };
@@ -93,17 +131,45 @@ export function CreateTaskForm() {
           style={{ margin: "0 auto", maxWidth: 800 }}
         >
           <Form.Item
+            hasFeedback
             name="title"
             label={<span style={{ fontSize: textSize }}>Title</span>}
-            rules={[{ required: true, message: "Please enter a title" }]}
+            validateDebounce={1000}
+            rules={[
+              { required: true, message: "Please enter a title" },
+              { max: 200, message: "Title cannot exceed 200 characters" },
+              { whitespace: true, message: "Title cannot be empty spaces" },
+              {
+                validator: (_, value) => {
+                  if (value && (value.startsWith(" ") || value.endsWith(" "))) {
+                    return Promise.reject(
+                      "Title cannot start or end with spaces"
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              },
+            ]}
           >
             <Input placeholder="Enter task title" />
           </Form.Item>
 
           <Form.Item
+            hasFeedback
             name="description"
             label={<span style={{ fontSize: textSize }}>Description</span>}
-            rules={[{ required: true, message: "Please enter a description" }]}
+            validateDebounce={1000}
+            rules={[
+              { required: true, message: "Please enter a description" },
+              {
+                max: 1000,
+                message: "Description cannot exceed 1000 characters",
+              },
+              {
+                whitespace: true,
+                message: "Description cannot be empty spaces",
+              },
+            ]}
           >
             <TextArea placeholder="Enter task description" rows={3} />
           </Form.Item>
@@ -111,6 +177,16 @@ export function CreateTaskForm() {
           <Form.Item
             name="dueDate"
             label={<span style={{ fontSize: textSize }}>Due Date</span>}
+            rules={[
+              {
+                validator: (_, value) => {
+                  if (value && value.isBefore(new Date(), "minute")) {
+                    return Promise.reject("Due date cannot be in the past");
+                  }
+                  return Promise.resolve();
+                },
+              },
+            ]}
           >
             <DatePicker
               showTime={{ format: "HH:mm" }}
@@ -120,15 +196,12 @@ export function CreateTaskForm() {
           </Form.Item>
 
           <Form.Item>
-            <Space>
-              <Button
-                type="primary"
-                htmlType="submit"
-                icon={createLoading ? <LoadingOutlined /> : <PlusOutlined />}
-              >
-                {createLoading ? "Creating..." : "Create Task"}
-              </Button>
-            </Space>
+            <SubmitButton form={form} loading={createLoading}>
+              {createLoading ? (
+                <LoadingOutlined style={{ fontSize: 12 }} />
+              ) : null}
+              Create Task
+            </SubmitButton>
           </Form.Item>
 
           {createError && (

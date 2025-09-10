@@ -142,7 +142,11 @@ export function UpdateTaskModal({
           <Input placeholder="Enter task title" />
         </Form.Item>
 
-        <Form.Item name="description" label="Description">
+        <Form.Item
+          name="description"
+          label="Description"
+          rules={[{ required: true, message: "Please enter a description" }]}
+        >
           <TextArea placeholder="Enter task description" rows={3} />
         </Form.Item>
 

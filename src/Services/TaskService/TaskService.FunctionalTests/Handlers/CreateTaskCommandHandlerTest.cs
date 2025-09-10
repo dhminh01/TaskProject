@@ -13,6 +13,7 @@ using FluentValidation;
 
 namespace TaskService.FunctionalTests.Handlers;
 
+[Trait("Category", "Unit")]
 public class CreateTaskCommandHandlerTest
 {
     private readonly Mock<ITaskRepository> _taskRepositoryMock;
@@ -22,13 +23,31 @@ public class CreateTaskCommandHandlerTest
     private readonly CreateTaskCommandHandler _handler;
     private readonly IValidator<CreateTaskCommand> _validator;
 
+    private static readonly DateTime CurrentUtcDate = DateTime.UtcNow.Date;
+
+    public static IEnumerable<object[]> ValidTaskCommands =>
+        new List<object[]>
+        {
+            new object[] { "Task 1", "Description 1", CurrentUtcDate.AddDays(1) },
+            new object[] { "Task 2", "Description 2", CurrentUtcDate.AddMonths(1) },
+            new object[] { "Task 3", "Description 3", CurrentUtcDate.AddYears(1) }
+        };
+
+    public static IEnumerable<object[]> InvalidDueDates =>
+        new List<object[]>
+        {
+            new object[] { CurrentUtcDate.AddDays(-1), "past date" },
+            new object[] { CurrentUtcDate.AddYears(-1), "past date" },
+            new object[] { CurrentUtcDate, "today's date" }
+        };
+
     public CreateTaskCommandHandlerTest()
     {
         _taskRepositoryMock = new Mock<ITaskRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _publishEndpointMock = new Mock<IPublishEndpoint>();
         _loggerMock = new Mock<ILogger<CreateTaskCommandHandler>>();
-        _validator = new CreateTaskCommandValidator();
+        _validator = new CreateTaskCommandValidator(_taskRepositoryMock.Object);
         _handler = new CreateTaskCommandHandler(
             _taskRepositoryMock.Object,
             _unitOfWorkMock.Object,
@@ -36,15 +55,17 @@ public class CreateTaskCommandHandlerTest
             _loggerMock.Object);
     }
 
-    [Fact]
-    public async Task Handle_ValidCommand_ShouldCreateTaskAndPublishEvent()
+    [Theory]
+    [MemberData(nameof(ValidTaskCommands))]
+    [Trait("Category", "Handler")]
+    public async Task Handle_ValidCommand_ShouldCreateTaskAndPublishEvent(string title, string description, DateTime dueDate)
     {
         // Arrange
         var command = new CreateTaskCommand
         {
-            Title = "Test Task",
-            Description = "Test Description",
-            DueDate = DateTime.UtcNow.AddDays(1)
+            Title = title,
+            Description = description,
+            DueDate = dueDate
         };
 
         _taskRepositoryMock.Setup(x => x.GetByTitleAsync(command.Title, It.IsAny<CancellationToken>()))
@@ -55,18 +76,27 @@ public class CreateTaskCommandHandlerTest
 
         // Assert
         result.Should().NotBeNull();
-        result.Title.Should().Be(command.Title);
-        result.Description.Should().Be(command.Description);
-        result.DueDate.Should().Be(command.DueDate);
+        result.Should().BeEquivalentTo(command, opts =>
+            opts.ExcludingMissingMembers());
 
-        _taskRepositoryMock.Verify(x => x.AddAsync(It.IsAny<TaskItem>(), It.IsAny<CancellationToken>()), Times.Once);
+        _taskRepositoryMock.Verify(x => x.AddAsync(It.Is<TaskItem>(t =>
+            t.Title == command.Title &&
+            t.Description == command.Description &&
+            t.DueDate == command.DueDate),
+            It.IsAny<CancellationToken>()), Times.Once);
+
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _publishEndpointMock.Verify(x => x.Publish(It.IsAny<TaskCreatedEvent>(), It.IsAny<CancellationToken>()), Times.Once);
+
+        _publishEndpointMock.Verify(x => x.Publish(It.Is<TaskCreatedEvent>(e =>
+            e.Title == command.Title &&
+            e.Description == command.Description),
+            It.IsAny<CancellationToken>()), Times.Once);
+
         _loggerMock.Verify(
             x => x.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => true),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(command.Title)),
                 It.IsAny<Exception>(),
                 It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
             Times.Once);
@@ -93,18 +123,42 @@ public class CreateTaskCommandHandlerTest
     }
 
     [Theory]
-    [InlineData(-1)] // Yesterday
-    [InlineData(-7)] // A week ago
-    [InlineData(-30)] // A month ago
-    public async Task Handle_PastDueDate_ShouldFailValidation(int daysOffset)
+    [MemberData(nameof(InvalidDueDates))]
+    [Trait("Category", "Validation")]
+    public async Task Handle_InvalidDueDate_ShouldFailValidation(DateTime dueDate, string reason)
     {
         // Arrange
-        var pastDate = DateTime.UtcNow.Date.AddDays(daysOffset);
         var command = new CreateTaskCommand
         {
             Title = "Test Task",
             Description = "Test Description",
-            DueDate = pastDate
+            DueDate = dueDate
+        };
+
+        // Act
+        var validationResult = await _validator.ValidateAsync(command);
+
+        // Assert
+        validationResult.IsValid.Should().BeFalse($"because {reason} should not be allowed");
+        validationResult.Errors.Should().Contain(e =>
+            e.PropertyName == nameof(CreateTaskCommand.DueDate) &&
+            e.ErrorMessage.Contains("future date", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Theory]
+    [InlineData("", "Description", "Title is required")]
+    [InlineData("   ", "Description", "Title cannot be empty")]
+    [InlineData("Title", "", "Description is required")]
+    [InlineData("Title", "   ", "Description cannot be empty")]
+    [Trait("Category", "Validation")]
+    public async Task Handle_InvalidCommand_ShouldFailValidation(string title, string description, string expectedError)
+    {
+        // Arrange
+        var command = new CreateTaskCommand
+        {
+            Title = title,
+            Description = description,
+            DueDate = DateTime.UtcNow.AddDays(1)
         };
 
         // Act
@@ -112,11 +166,12 @@ public class CreateTaskCommandHandlerTest
 
         // Assert
         validationResult.IsValid.Should().BeFalse();
-        validationResult.Errors.Should().Contain(e => e.PropertyName == "DueDate" &&
-            e.ErrorMessage.Contains("future date", StringComparison.OrdinalIgnoreCase));
+        validationResult.Errors.Should().Contain(e =>
+            e.ErrorMessage.Contains(expectedError, StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
+    [Trait("Category", "ErrorHandling")]
     public async Task Handle_WhenRepositoryThrowsException_ShouldPropagateException()
     {
         // Arrange
@@ -127,16 +182,29 @@ public class CreateTaskCommandHandlerTest
             DueDate = DateTime.UtcNow.AddDays(1)
         };
 
+        var dbException = new Exception("Database error");
         _taskRepositoryMock.Setup(x => x.GetByTitleAsync(command.Title, It.IsAny<CancellationToken>()))
             .ReturnsAsync(null as TaskItem);
         _taskRepositoryMock.Setup(x => x.AddAsync(It.IsAny<TaskItem>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new Exception("Database error"));
+            .ThrowsAsync(dbException);
 
         // Act & Assert
-        await Assert.ThrowsAsync<Exception>(() => _handler.Handle(command, CancellationToken.None));
+        var exception = await Assert.ThrowsAsync<Exception>(() =>
+            _handler.Handle(command, CancellationToken.None));
+
+        exception.Should().Be(dbException);
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Database error")),
+                It.IsAny<Exception>(),
+                It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
+            Times.Once);
     }
 
     [Fact]
+    [Trait("Category", "ErrorHandling")]
     public async Task Handle_WhenPublishEndpointThrowsException_ShouldPropagateException()
     {
         // Arrange
@@ -147,21 +215,27 @@ public class CreateTaskCommandHandlerTest
             DueDate = DateTime.UtcNow.AddDays(1)
         };
 
+        var publisherException = new Exception("Publisher error");
         _taskRepositoryMock.Setup(x => x.GetByTitleAsync(command.Title, It.IsAny<CancellationToken>()))
             .ReturnsAsync(null as TaskItem);
         _publishEndpointMock.Setup(x => x.Publish(It.IsAny<TaskCreatedEvent>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new Exception("Publisher error"));
+            .ThrowsAsync(publisherException);
 
         // Act & Assert
-        await Assert.ThrowsAsync<Exception>(() => _handler.Handle(command, CancellationToken.None));
+        var exception = await Assert.ThrowsAsync<Exception>(() =>
+            _handler.Handle(command, CancellationToken.None));
 
+        exception.Should().Be(publisherException);
         _loggerMock.Verify(
             x => x.Log(
                 LogLevel.Error,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => true),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Publisher error")),
                 It.IsAny<Exception>(),
                 It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
             Times.Once);
+
+        // Verify that changes were rolled back
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 }

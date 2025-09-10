@@ -15,6 +15,8 @@ using TaskProject.Proto;
 using TaskService.API.Consumers;
 using TaskService.API.GraphQL.Filters;
 using HotChocolate.Types.Pagination;
+using TaskService.Application;
+using TaskService.API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,18 +51,13 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 // MediatR
 builder.Services.AddMediatR(cfg =>
 {
-    cfg.RegisterServicesFromAssembly(typeof(CreateTaskCommand).Assembly);
-    cfg.RegisterServicesFromAssembly(typeof(GetTaskDetailQuery).Assembly);
-    cfg.RegisterServicesFromAssembly(typeof(DeleteTaskCommand).Assembly);
-    cfg.RegisterServicesFromAssembly(typeof(GetAllTasksQuery).Assembly);
-
+    cfg.RegisterServicesFromAssembly(typeof(AssemblyAnchor).Assembly);
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 });
 
 // FluentValidation
-builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskCommandValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<UpdateTaskCommandValidator>();
+builder.Services.AddValidatorsFromAssembly(typeof(AssemblyAnchor).Assembly);
 
 // MassTransit
 builder.Services.AddMassTransit(x =>
@@ -116,22 +113,7 @@ builder.Services.AddMassTransit(x =>
 });
 
 // GraphQL
-builder.Services
-    .AddGraphQLServer()
-    .AddQueryType<TaskQueries>()
-    .AddMutationType<TaskMutations>()
-    .AddType<CreateTaskInputType>()
-    .AddType<CreateTaskPayloadType>()
-    .AddType<CreateTaskResultType>()
-    .AddType<DeleteTaskInputType>()
-    .AddType<DeleteTaskPayloadType>()
-    .AddType<TaskType>()
-    .AddType<TaskDetailType>()
-    .AddErrorFilter<GraphQLErrorFilter>()
-    .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = builder.Environment.IsDevelopment())
-    .AddProjections()
-    .AddFiltering()
-    .AddSorting();
+builder.Services.AddGraphQLServices(builder.Environment);
 
 // CORS
 builder.Services.AddCors(options =>

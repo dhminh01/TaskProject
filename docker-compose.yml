@@ -1,0 +1,37 @@
+services:
+  gateway-api:
+    build:
+      context: .
+      dockerfile: src/Gateway/Gateway.API/Dockerfile
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - taskproject-network
+
+  task-service:
+    build:
+      context: .
+      dockerfile: src/Services/TaskService/TaskService.API/Dockerfile
+    ports:
+      - "5001:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - taskproject-network
+
+  email-service:
+    build:
+      context: .
+      dockerfile: src/Services/EmailService/EmailService.API/Dockerfile
+    ports:
+      - "5002:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - taskproject-network
+
+networks:
+  taskproject-network:
+    driver: bridge
