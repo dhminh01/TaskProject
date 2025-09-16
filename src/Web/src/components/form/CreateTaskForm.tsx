@@ -9,7 +9,7 @@ import {
   type FormInstance,
 } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
-import { useMutation } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { CREATE_TASK } from "../../graphql/mutations";
 import { GET_TASKS } from "../../graphql/queries";
 import toast from "react-hot-toast";
@@ -55,6 +55,7 @@ const SubmitButton: React.FC<React.PropsWithChildren<SubmitButtonProps>> = ({
 export function CreateTaskForm() {
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const { data: tasksData } = useQuery<ITasksData>(GET_TASKS);
 
   const textSize = "16px";
 
@@ -145,6 +146,20 @@ export function CreateTaskForm() {
                     return Promise.reject(
                       "Title cannot start or end with spaces"
                     );
+                  }
+                  // Check for duplicate titles
+                  if (value && tasksData?.tasks) {
+                    const trimmedValue = value.trim();
+                    const isDuplicate = tasksData.tasks.some(
+                      (task) =>
+                        task.title.trim().toLowerCase() ===
+                        trimmedValue.toLowerCase()
+                    );
+                    if (isDuplicate) {
+                      return Promise.reject(
+                        "A task with this title already exists"
+                      );
+                    }
                   }
                   return Promise.resolve();
                 },

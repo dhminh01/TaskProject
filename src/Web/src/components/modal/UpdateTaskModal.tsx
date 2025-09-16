@@ -1,5 +1,5 @@
 import { Modal, Form, Input, DatePicker, Button } from "antd";
-import { useMutation } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { UPDATE_TASK } from "../../graphql/mutations";
 import { GET_TASKS } from "../../graphql/queries";
 import toast from "react-hot-toast";
@@ -27,6 +27,7 @@ export function UpdateTaskModal({
 }: UpdateTaskModalProps) {
   const [form] = Form.useForm();
   const isEditing = !!taskToEdit;
+  const { data: tasksData } = useQuery<ITasksData>(GET_TASKS);
 
   // // Reset form when modal is closed
   // useEffect(() => {
@@ -137,7 +138,28 @@ export function UpdateTaskModal({
         <Form.Item
           name="title"
           label="Title"
-          rules={[{ required: true, message: "Please enter a title" }]}
+          rules={[
+            { required: true, message: "Please enter a title" },
+            {
+              validator: (_, value) => {
+                if (value && tasksData?.tasks) {
+                  const trimmedValue = value.trim();
+                  const isDuplicate = tasksData.tasks.some(
+                    (task) =>
+                      task.id !== taskToEdit?.id && // Exclude current task
+                      task.title.trim().toLowerCase() ===
+                        trimmedValue.toLowerCase()
+                  );
+                  if (isDuplicate) {
+                    return Promise.reject(
+                      "A task with this title already exists"
+                    );
+                  }
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
         >
           <Input placeholder="Enter task title" />
         </Form.Item>
