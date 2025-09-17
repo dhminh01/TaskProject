@@ -30,14 +30,6 @@ public class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand, Creat
 
     public async Task<CreateTaskResponseDto> Handle(CreateTaskCommand request, CancellationToken cancellationToken)
     {
-
-        // Check for duplicate title
-        var existingTask = await _taskRepository.GetByTitleAsync(request.Title, cancellationToken);
-        if (existingTask != null)
-        {
-            throw new DuplicateTaskTitleException(request.Title);
-        }
-
         var taskItem = new TaskItem(
             request.Title,
             request.Description,

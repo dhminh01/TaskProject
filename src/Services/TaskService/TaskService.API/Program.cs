@@ -1,22 +1,16 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using TaskService.Api.GraphQL.Mutations;
-using TaskService.Api.GraphQL.Queries;
 using TaskService.Application.Common.Behaviors;
-using TaskService.Application.Tasks.Commands;
-using TaskService.Application.Tasks.Queries;
-using TaskService.Application.Tasks.Validators;
 using TaskService.Domain.Interfaces;
 using TaskService.Infrastructure.Persistence;
 using TaskService.Infrastructure.Repositories;
 using MassTransit;
 using TaskProject.Proto;
 using TaskService.API.Consumers;
-using TaskService.API.GraphQL.Filters;
-using HotChocolate.Types.Pagination;
 using TaskService.Application;
 using TaskService.API.Extensions;
+using TaskService.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,14 +21,7 @@ builder.Services.AddGrpcReflection();
 // Configure gRPC client to connect to EmailService
 builder.Services.AddGrpcClient<EmailNotification.EmailNotificationClient>(options =>
 {
-    options.Address = new Uri("https://localhost:5009"); // EmailService gRPC port
-}).ConfigureChannel(options =>
-{
-    options.UnsafeUseInsecureChannelCallCredentials = true;
-    options.HttpHandler = new HttpClientHandler
-    {
-        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-    };
+    options.Address = new Uri("http://emailservice:5009"); // EmailService gRPC port in Docker network
 });
 
 // Register EmailNotificationHandler
@@ -42,7 +29,9 @@ builder.Services.AddScoped<EmailConfirmationHandler>();
 
 // Database
 builder.Services.AddDbContext<TaskDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
 
 // Repositories
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
@@ -66,10 +55,16 @@ builder.Services.AddMassTransit(x =>
 
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("localhost", "/", h =>
+        // Use environment variables with fallback values
+        var host = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost";
+        var port = Environment.GetEnvironmentVariable("RABBITMQ_PORT") ?? "5672";
+        var username = Environment.GetEnvironmentVariable("RABBITMQ_USERNAME") ?? "guest";
+        var password = Environment.GetEnvironmentVariable("RABBITMQ_PASSWORD") ?? "guest";
+
+        cfg.Host(host, "/", h =>
         {
-            h.Username("guest");
-            h.Password("guest");
+            h.Username(username);
+            h.Password(password);
         });
 
         cfg.ReceiveEndpoint("email-sent-confirmations-v2", e =>
@@ -132,16 +127,9 @@ AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport
 
 builder.WebHost.ConfigureKestrel(options =>
 {
-    // HTTP endpoint
+    // HTTP endpoint for both Http1 and Http2
     options.ListenAnyIP(5008, listenOptions =>
     {
-        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
-    });
-
-    // HTTPS endpoint
-    options.ListenAnyIP(7131, listenOptions =>
-    {
-        listenOptions.UseHttps();
         listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
     });
 });
@@ -156,6 +144,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowReactApp");
 app.UseRouting();
+
+app.UseMiddleware<ErrorHandlingMiddleware>();
+
+app.MigrateDb();
 
 // Configure GraphQL endpoint with options
 app.MapGraphQL("/api/task").WithOptions(new HotChocolate.AspNetCore.GraphQLServerOptions

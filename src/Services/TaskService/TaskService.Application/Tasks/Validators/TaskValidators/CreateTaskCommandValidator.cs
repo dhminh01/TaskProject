@@ -37,7 +37,7 @@ public class CreateTaskCommandValidator : AbstractValidator<CreateTaskCommand>
             .Must(dueDate =>
             {
                 if (dueDate.HasValue && dueDate.Value <= DateTime.UtcNow)
-                    throw new InvalidDueDateException();
+                    throw new InvalidDueDateException(dueDate);
                 return true;
             })
             .When(x => x.DueDate.HasValue);

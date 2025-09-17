@@ -30,31 +30,11 @@ public class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand, Updat
 
     public async Task<UpdateTaskResponseDto> Handle(UpdateTaskCommand request, CancellationToken cancellationToken)
     {
-        // // Validate due date
-        // if (request.DueDate.HasValue)
-        // {
-        //     var utcDueDate = request.DueDate.Value.ToUniversalTime();
-        //     if (utcDueDate <= DateTime.UtcNow)
-        //     {
-        //         throw new InvalidDueDateException();
-        //     }
-        // }
-
         // Get the task
         var taskItem = await _taskRepository.GetByIdAsync(request.Id, cancellationToken);
         if (taskItem == null)
         {
             throw new TaskNotFoundException(request.Id);
-        }
-
-        // Check for duplicate title if title is being changed
-        if (taskItem.Title != request.Title)
-        {
-            var existingTask = await _taskRepository.GetByTitleAsync(request.Title, cancellationToken);
-            if (existingTask != null && existingTask.Id != request.Id)
-            {
-                throw new DuplicateTaskTitleException(request.Title);
-            }
         }
 
         // Store old values before update
