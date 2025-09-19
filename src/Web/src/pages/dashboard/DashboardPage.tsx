@@ -1,10 +1,25 @@
 import { WaterMark } from "@ant-design/pro-components";
 import { Typography } from "antd";
+import { useMemo } from "react";
 const { Title } = Typography;
 
-export function DashboardPage() {
+export default function DashboardPage() {
+  const watermarkProps = useMemo(
+    () => ({
+      content: ["taskapp - dhminh01"],
+      font: "16px Roboto",
+      zIndex: 11,
+      rotate: -22,
+      gapX: 212,
+      gapY: 222,
+      offsetTop: 0,
+      offsetLeft: 0,
+    }),
+    []
+  );
+
   return (
-    <WaterMark content={["taskapp - dhminh01"]}>
+    <WaterMark {...watermarkProps}>
       <div style={{ padding: "24px" }}>
         <Title level={3} style={{ fontWeight: "bold" }}>
           Welcome to Task Management System

@@ -2,7 +2,8 @@ import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client";
 
 // Create Apollo Client with cache configuration
 const client = new ApolloClient({
-  link: new HttpLink({ uri: "http://localhost:5000/tasks" }),
+  // link: new HttpLink({ uri: "http://localhost:5000/tasks" }),
+  link: new HttpLink({ uri: "http://localhost:5008/api/task" }),
   cache: new InMemoryCache({
     typePolicies: {
       Query: {

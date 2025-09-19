@@ -69,17 +69,21 @@ export function CreateTaskForm() {
   const [createTask, { loading: createLoading, error: createError }] =
     useMutation<ICreateTaskData, ICreateTaskVars>(CREATE_TASK, {
       update(cache, { data }) {
-        const newTask = data?.createTask?.task;
-        if (!newTask) return;
+        if (!cache || !data?.createTask?.task) return;
+        const newTask = data.createTask.task;
         try {
           const existing = cache.readQuery<ITasksData>({
             query: GET_TASKS,
           });
+          const existingTasks =
+            existing?.tasks?.filter((task) => task != null) ?? [];
           cache.writeQuery<ITasksData>({
             query: GET_TASKS,
-            data: { tasks: [newTask, ...(existing?.tasks ?? [])] },
+            data: { tasks: [newTask, ...existingTasks] },
           });
-        } catch {}
+        } catch (error) {
+          console.error("Error updating cache:", error);
+        }
       },
       onCompleted() {
         toast.success("Task created successfully");

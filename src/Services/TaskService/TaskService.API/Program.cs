@@ -55,9 +55,7 @@ builder.Services.AddMassTransit(x =>
 
     x.UsingRabbitMq((context, cfg) =>
     {
-        // Use environment variables with fallback values
         var host = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost";
-        var port = Environment.GetEnvironmentVariable("RABBITMQ_PORT") ?? "5672";
         var username = Environment.GetEnvironmentVariable("RABBITMQ_USERNAME") ?? "guest";
         var password = Environment.GetEnvironmentVariable("RABBITMQ_PASSWORD") ?? "guest";
 

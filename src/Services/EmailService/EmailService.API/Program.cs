@@ -18,10 +18,14 @@ builder.Services.AddMassTransit(x =>
 
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("localhost", "/", h =>
+        var host = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost";
+        var username = Environment.GetEnvironmentVariable("RABBITMQ_USERNAME") ?? "guest";
+        var password = Environment.GetEnvironmentVariable("RABBITMQ_PASSWORD") ?? "guest";
+
+        cfg.Host(host, "/", h =>
         {
-            h.Username("guest");
-            h.Password("guest");
+            h.Username(username);
+            h.Password(password);
         });
 
         cfg.ReceiveEndpoint("email-service-task-created-v2", e =>
@@ -108,13 +112,12 @@ builder.Services.AddLogging();
 // Add Gmail email service as singleton to prevent multiple token file access
 builder.Services.AddSingleton<IEmailService, GmailEmailService>();
 
-// Configure Kestrel to listen on both HTTP and HTTPS
+// Configure Kestrel to listen on HTTP
 builder.WebHost.ConfigureKestrel(options =>
 {
-    // Setup HTTP/2 endpoint with TLS on port 5009
+    // Setup HTTP/2 endpoint without TLS on port 5009
     options.ListenLocalhost(5009, o =>
     {
-        o.UseHttps();
         o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2;
     });
 });

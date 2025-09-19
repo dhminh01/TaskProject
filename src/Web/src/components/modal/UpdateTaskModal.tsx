@@ -1,5 +1,5 @@
 import { Modal, Form, Input, DatePicker, Button } from "antd";
-import { useMutation, useQuery } from "@apollo/client/react";
+import { useMutation } from "@apollo/client/react";
 import { UPDATE_TASK } from "../../graphql/mutations";
 import { GET_TASKS } from "../../graphql/queries";
 import toast from "react-hot-toast";
@@ -27,35 +27,24 @@ export function UpdateTaskModal({
 }: UpdateTaskModalProps) {
   const [form] = Form.useForm();
   const isEditing = !!taskToEdit;
-  const { data: tasksData } = useQuery<ITasksData>(GET_TASKS);
-
-  // // Reset form when modal is closed
-  // useEffect(() => {
-  //   if (!open) {
-  //     form.resetFields();
-  //   }
-  // }, [open, form]);
-
-  // // Cleanup form when component unmounts
-  // useEffect(() => {
-  //   return () => {
-  //     form.resetFields();
-  //   };
-  // }, [form]);
+  // const { data: tasksData } = useQuery<ITasksData>(GET_TASKS);
 
   const [updateTask, { loading: updateLoading, error: updateError }] =
     useMutation<IUpdateTaskData, IUpdateTaskVars>(UPDATE_TASK, {
       update(cache, { data }) {
-        const updatedTask = data?.updateTask?.task;
-        if (!updatedTask) return;
+        if (!cache || !data?.updateTask?.task) return;
+        const updatedTask = data.updateTask.task;
+
         try {
           const existing = cache.readQuery<ITasksData>({ query: GET_TASKS });
           if (!existing?.tasks) return;
 
           // Sort tasks to maintain the order (newest first)
           const updatedTasks = existing.tasks
-            .map((task) => (task.id === updatedTask.id ? updatedTask : task))
+            .map((task) => (task?.id === updatedTask.id ? updatedTask : task))
+            .filter((task) => task != null) // Filter out any null/undefined tasks
             .sort((a, b) => {
+              if (!a || !b) return 0;
               const da = a.dateCreated ? Date.parse(a.dateCreated) : 0;
               const db = b.dateCreated ? Date.parse(b.dateCreated) : 0;
               return db - da;
@@ -138,28 +127,7 @@ export function UpdateTaskModal({
         <Form.Item
           name="title"
           label="Title"
-          rules={[
-            { required: true, message: "Please enter a title" },
-            {
-              validator: (_, value) => {
-                if (value && tasksData?.tasks) {
-                  const trimmedValue = value.trim();
-                  const isDuplicate = tasksData.tasks.some(
-                    (task) =>
-                      task.id !== taskToEdit?.id && // Exclude current task
-                      task.title.trim().toLowerCase() ===
-                        trimmedValue.toLowerCase()
-                  );
-                  if (isDuplicate) {
-                    return Promise.reject(
-                      "A task with this title already exists"
-                    );
-                  }
-                }
-                return Promise.resolve();
-              },
-            },
-          ]}
+          rules={[{ required: true, message: "Please enter a title" }]}
         >
           <Input placeholder="Enter task title" />
         </Form.Item>

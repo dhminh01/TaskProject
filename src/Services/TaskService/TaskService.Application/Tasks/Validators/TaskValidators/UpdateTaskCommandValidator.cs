@@ -21,15 +21,7 @@ public class UpdateTaskCommandValidator : AbstractValidator<UpdateTaskCommand>
             .NotEmpty()
             .WithMessage("Title is required")
             .MaximumLength(200)
-            .WithMessage("Title must not exceed 200 characters")
-            .MustAsync(async (title, cancellation) =>
-            {
-                var existingTask = await _taskRepository.GetByTitleAsync(title, cancellation);
-                if (existingTask != null)
-                    throw new DuplicateTaskTitleException(title);
-                return true;
-            })
-            .WithMessage(x => $"A task with the title '{x.Title}' already exists");
+            .WithMessage("Title must not exceed 200 characters");
 
         RuleFor(x => x.Description)
             .NotEmpty()

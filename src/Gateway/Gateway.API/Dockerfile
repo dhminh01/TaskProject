@@ -1,20 +1,28 @@
-FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
+EXPOSE 5000
+EXPOSE 5001
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0.414 AS build
 WORKDIR /src
-COPY ["src/Gateway/Gateway.API/Gateway.API.csproj", "Gateway/Gateway.API/"]
-RUN dotnet restore "Gateway/Gateway.API/Gateway.API.csproj"
-COPY . .
-WORKDIR "/src/Gateway/Gateway.API"
-RUN dotnet build "Gateway.API.csproj" -c Release -o /app/build
 
-FROM build AS publish
-RUN dotnet publish "Gateway.API.csproj" -c Release -o /app/publish
+COPY ["src/Gateway/Gateway.API/Gateway.API.csproj", "src/Gateway/Gateway.API/"]
+
+RUN dotnet restore "src/Gateway/Gateway.API/Gateway.API.csproj"
+
+COPY . .
+WORKDIR "/src/src/Gateway/Gateway.API"
+
+RUN dotnet build "Gateway.API.csproj" -c Release
+RUN dotnet publish "Gateway.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
 
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=build /app/publish .
+
+# Set ASP.NET Core environment
+ENV ASPNETCORE_URLS=http://+:5000,https://+:5001
+ENV ASPNETCORE_ENVIRONMENT=Development
+
 ENTRYPOINT ["dotnet", "Gateway.API.dll"]

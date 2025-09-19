@@ -1,23 +1,43 @@
 services:
-  gateway-api:
-    build:
-      context: .
-      dockerfile: src/Gateway/Gateway.API/Dockerfile
-    ports:
-      - "5000:80"
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    hostname: rabbitmq
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - "15672:15672"  # Management UI port
+      - "5674:5672"    # AMQP port (changed from 5672 to avoid conflicts)
     networks:
       - taskproject-network
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Minhduong01@
+    ports:
+      - "1433:1433"
+    networks:
+      - taskproject-network
+
 
   task-service:
     build:
       context: .
       dockerfile: src/Services/TaskService/TaskService.API/Dockerfile
     ports:
-      - "5001:80"
+      - "5008:5008"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=TaskDb;User Id=sa;Password=Minhduong01@;TrustServerCertificate=True
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USERNAME=guest
+      - RABBITMQ_PASSWORD=guest
+    depends_on:
+      - sqlserver
+      - rabbitmq
     networks:
       - taskproject-network
 
@@ -26,7 +46,39 @@ services:
       context: .
       dockerfile: src/Services/EmailService/EmailService.API/Dockerfile
     ports:
-      - "5002:80"
+      - "5009:5009"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USERNAME=guest
+      - RABBITMQ_PASSWORD=guest
+      - GMAIL_CLIENT_ID=38924149032-aklva6a0u1g91ie30vrdq073uusmg35s.apps.googleusercontent.com
+      - GMAIL_CLIENT_SECRET=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
+      - GMAIL_FROM_EMAIL=dhminh.work@gmail.com
+    networks:
+      - taskproject-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: src/Web/Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - task-service
+    networks:
+      - taskproject-network
+
+      
+  gateway-api:
+    build:
+      context: .
+      dockerfile: src/Gateway/Gateway.API/Dockerfile
+    depends_on:
+      - task-service
+      - email-service
+    ports:
+      - "5000:5000"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     networks:
