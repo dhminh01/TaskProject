@@ -1,0 +1,72 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: taskproject
+  namespace: taskproject
+
+# Namespace to deploy resources to
+namespace: taskproject
+
+# Resources to include in this deployment
+resources:
+  - namespace.yaml
+  - configmap-secrets.yaml
+  - infrastructure/sqlserver.yaml
+  - infrastructure/rabbitmq.yaml
+  - services/task-service.yaml
+  - services/email-service.yaml
+  - gateway/gateway-service.yaml
+  - web/frontend.yaml
+  - ingress.yaml
+  - hpa.yaml
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/name: taskproject
+  app.kubernetes.io/version: v1.0.0
+  app.kubernetes.io/component: microservices
+  app.kubernetes.io/part-of: taskproject
+
+# Common annotations applied to all resources
+commonAnnotations:
+  deployment.kubernetes.io/revision: "1"
+
+# Images to use (can be overridden in overlays)
+images:
+  - name: taskproject/task-service
+    newTag: latest
+  - name: taskproject/email-service
+    newTag: latest
+  - name: taskproject/gateway-service
+    newTag: latest
+  - name: taskproject/frontend
+    newTag: latest
+
+# Patches for environment-specific modifications
+patches:
+  # Patch for production resource limits
+  - target:
+      kind: Deployment
+      name: task-service
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "2Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "1"
+
+# ConfigMap generator (alternative to manual configmap)
+configMapGenerator:
+  - name: taskproject-env-config
+    literals:
+      - LOG_LEVEL=INFO
+      - METRICS_ENABLED=true
+      - TRACING_ENABLED=true
+
+# Secret generator (for non-sensitive config)
+secretGenerator:
+  - name: taskproject-app-secrets
+    literals:
+      - API_VERSION=v1.0.0

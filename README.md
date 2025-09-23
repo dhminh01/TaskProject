@@ -11,6 +11,27 @@ This project is a Task Management system built with the following technologies:
 - [**Gmail API**](https://developers.google.com/gmail/api)
 - [**React & Typescript**](https://react.dev/)
 - [**Ant Design**](https://ant.design/)
+- [**Docker & Kubernetes**](https://kubernetes.io/) - Container orchestration
+
+## 🚀 Deployment Options
+
+### Docker Compose (Development)
+
+```bash
+docker-compose up -d
+```
+
+### Kubernetes (Production)
+
+```bash
+# Quick deployment
+.\k8s\deploy.ps1
+
+# Or manual deployment
+kubectl apply -f k8s/
+```
+
+For detailed Kubernetes setup instructions, see [k8s/README.md](k8s/README.md).
 
 # Development notes:
 

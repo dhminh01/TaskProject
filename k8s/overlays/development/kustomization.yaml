@@ -1,0 +1,85 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference to base configuration
+resources:
+  - ../../
+
+# Namespace override for development
+namespace: taskproject-dev
+
+# Environment-specific patches
+patches:
+  # Reduce resource requirements for development
+  - target:
+      kind: Deployment
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "256Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "100m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "512Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "250m"
+
+  # Reduce replica counts for development
+  - target:
+      kind: Deployment
+      name: task-service
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+
+  - target:
+      kind: Deployment
+      name: email-service
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+
+  - target:
+      kind: Deployment
+      name: gateway-service
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+
+  - target:
+      kind: Deployment
+      name: frontend
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+
+# Override images for development (using dev tags)
+images:
+  - name: taskproject/task-service
+    newTag: dev
+  - name: taskproject/email-service
+    newTag: dev
+  - name: taskproject/gateway-service
+    newTag: dev
+  - name: taskproject/frontend
+    newTag: dev
+
+# Additional labels for development environment
+commonLabels:
+  environment: development
+
+# Development-specific ConfigMap
+configMapGenerator:
+  - name: taskproject-dev-config
+    behavior: merge
+    literals:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - LOG_LEVEL=Debug
+      - ENABLE_SWAGGER=true

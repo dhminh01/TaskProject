@@ -1,0 +1,79 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: taskproject-ingress
+  namespace: taskproject
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: taskproject.local
+      http:
+        paths:
+          # Frontend routes
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 80
+          # API Gateway routes
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: gateway-service
+                port:
+                  number: 5000
+          # Direct service access (for development/debugging)
+          - path: /task-service
+            pathType: Prefix
+            backend:
+              service:
+                name: task-service
+                port:
+                  number: 5008
+          - path: /email-service
+            pathType: Prefix
+            backend:
+              service:
+                name: email-service
+                port:
+                  number: 5009
+          # RabbitMQ Management UI
+          - path: /rabbitmq
+            pathType: Prefix
+            backend:
+              service:
+                name: rabbitmq-service
+                port:
+                  number: 15672
+---
+# Alternative LoadBalancer service for cloud environments
+apiVersion: v1
+kind: Service
+metadata:
+  name: taskproject-loadbalancer
+  namespace: taskproject
+  labels:
+    app: taskproject
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+    - port: 5000
+      targetPort: 5000
+      protocol: TCP
+      name: gateway
+  selector:
+    app: gateway-service

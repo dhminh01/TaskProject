@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ServiceMonitor
+metadata:
+  name: taskproject-metrics
+  namespace: taskproject
+  labels:
+    app: taskproject
+spec:
+  selector:
+    matchLabels:
+      app: task-service
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+---
+apiVersion: v1
+kind: ServiceMonitor
+metadata:
+  name: taskproject-email-metrics
+  namespace: taskproject
+  labels:
+    app: taskproject
+spec:
+  selector:
+    matchLabels:
+      app: email-service
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+---
+apiVersion: v1
+kind: ServiceMonitor
+metadata:
+  name: taskproject-gateway-metrics
+  namespace: taskproject
+  labels:
+    app: taskproject
+spec:
+  selector:
+    matchLabels:
+      app: gateway-service
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
