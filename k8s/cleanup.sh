@@ -1,4 +1,4 @@
-#!/bin/bash
+./k8s/deploy.sh#!/bin/bash
 
 # TaskProject Kubernetes Cleanup Script
 # This script removes the TaskProject application from Kubernetes cluster
